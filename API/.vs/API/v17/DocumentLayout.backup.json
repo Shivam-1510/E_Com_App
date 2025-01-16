@@ -1,0 +1,133 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "C:\\Users\\Shivam\\Downloads\\API\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{7BAAC465-95C6-44F8-9D89-C85F938DEEA2}|API\\API.csproj|c:\\users\\shivam\\downloads\\api\\api\\models\\usermodels\\rolelevels.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{7BAAC465-95C6-44F8-9D89-C85F938DEEA2}|API\\API.csproj|solutionrelative:api\\models\\usermodels\\rolelevels.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{7BAAC465-95C6-44F8-9D89-C85F938DEEA2}|API\\API.csproj|c:\\users\\shivam\\downloads\\api\\api\\controllers\\usercontrollers\\usercontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{7BAAC465-95C6-44F8-9D89-C85F938DEEA2}|API\\API.csproj|solutionrelative:api\\controllers\\usercontrollers\\usercontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{7BAAC465-95C6-44F8-9D89-C85F938DEEA2}|API\\API.csproj|c:\\users\\shivam\\downloads\\api\\api\\controllers\\usercontrollers\\userrolecontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{7BAAC465-95C6-44F8-9D89-C85F938DEEA2}|API\\API.csproj|solutionrelative:api\\controllers\\usercontrollers\\userrolecontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{7BAAC465-95C6-44F8-9D89-C85F938DEEA2}|API\\API.csproj|c:\\users\\shivam\\downloads\\api\\api\\controllers\\productcontrollers\\categorycontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{7BAAC465-95C6-44F8-9D89-C85F938DEEA2}|API\\API.csproj|solutionrelative:api\\controllers\\productcontrollers\\categorycontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{7BAAC465-95C6-44F8-9D89-C85F938DEEA2}|API\\API.csproj|c:\\users\\shivam\\downloads\\api\\api\\controllers\\usercontrollers\\registercontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{7BAAC465-95C6-44F8-9D89-C85F938DEEA2}|API\\API.csproj|solutionrelative:api\\controllers\\usercontrollers\\registercontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{7BAAC465-95C6-44F8-9D89-C85F938DEEA2}|API\\API.csproj|c:\\users\\shivam\\downloads\\api\\api\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{7BAAC465-95C6-44F8-9D89-C85F938DEEA2}|API\\API.csproj|solutionrelative:api\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{7BAAC465-95C6-44F8-9D89-C85F938DEEA2}|API\\API.csproj|c:\\users\\shivam\\downloads\\api\\api\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
+      "RelativeMoniker": "D:0:0:{7BAAC465-95C6-44F8-9D89-C85F938DEEA2}|API\\API.csproj|solutionrelative:api\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 0,
+          "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "RoleLevels.cs",
+              "DocumentMoniker": "C:\\Users\\Shivam\\Downloads\\API\\API\\Models\\UserModels\\RoleLevels.cs",
+              "RelativeDocumentMoniker": "API\\Models\\UserModels\\RoleLevels.cs",
+              "ToolTip": "C:\\Users\\Shivam\\Downloads\\API\\API\\Models\\UserModels\\RoleLevels.cs",
+              "RelativeToolTip": "API\\Models\\UserModels\\RoleLevels.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAIAAAAEAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-01-16T09:20:41.78Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "RegisterController.cs",
+              "DocumentMoniker": "C:\\Users\\Shivam\\Downloads\\API\\API\\Controllers\\UserControllers\\RegisterController.cs",
+              "RelativeDocumentMoniker": "API\\Controllers\\UserControllers\\RegisterController.cs",
+              "ToolTip": "C:\\Users\\Shivam\\Downloads\\API\\API\\Controllers\\UserControllers\\RegisterController.cs",
+              "RelativeToolTip": "API\\Controllers\\UserControllers\\RegisterController.cs",
+              "ViewState": "AgIAAK0AAAAAAAAAAAAAALcAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-01-13T11:13:42.686Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "UserController.cs",
+              "DocumentMoniker": "C:\\Users\\Shivam\\Downloads\\API\\API\\Controllers\\UserControllers\\UserController.cs",
+              "RelativeDocumentMoniker": "API\\Controllers\\UserControllers\\UserController.cs",
+              "ToolTip": "C:\\Users\\Shivam\\Downloads\\API\\API\\Controllers\\UserControllers\\UserController.cs",
+              "RelativeToolTip": "API\\Controllers\\UserControllers\\UserController.cs",
+              "ViewState": "AgIAABsAAAAAAAAAAAAYwBMAAAAaAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-01-13T05:24:10.981Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "UserRoleController.cs",
+              "DocumentMoniker": "C:\\Users\\Shivam\\Downloads\\API\\API\\Controllers\\UserControllers\\UserRoleController.cs",
+              "RelativeDocumentMoniker": "API\\Controllers\\UserControllers\\UserRoleController.cs",
+              "ToolTip": "C:\\Users\\Shivam\\Downloads\\API\\API\\Controllers\\UserControllers\\UserRoleController.cs",
+              "RelativeToolTip": "API\\Controllers\\UserControllers\\UserRoleController.cs",
+              "ViewState": "AgIAAAwAAAAAAAAAAAAmwBcAAAAIAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-01-13T05:24:10.063Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "CategoryController.cs",
+              "DocumentMoniker": "C:\\Users\\Shivam\\Downloads\\API\\API\\Controllers\\ProductControllers\\CategoryController.cs",
+              "RelativeDocumentMoniker": "API\\Controllers\\ProductControllers\\CategoryController.cs",
+              "ToolTip": "C:\\Users\\Shivam\\Downloads\\API\\API\\Controllers\\ProductControllers\\CategoryController.cs",
+              "RelativeToolTip": "API\\Controllers\\ProductControllers\\CategoryController.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-01-13T05:13:48.846Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "Program.cs",
+              "DocumentMoniker": "C:\\Users\\Shivam\\Downloads\\API\\API\\Program.cs",
+              "RelativeDocumentMoniker": "API\\Program.cs",
+              "ToolTip": "C:\\Users\\Shivam\\Downloads\\API\\API\\Program.cs",
+              "RelativeToolTip": "API\\Program.cs",
+              "ViewState": "AgIAAC0AAAAAAAAAAAAAADMAAAAwAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-01-13T05:07:49.706Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "appsettings.json",
+              "DocumentMoniker": "C:\\Users\\Shivam\\Downloads\\API\\API\\appsettings.json",
+              "RelativeDocumentMoniker": "API\\appsettings.json",
+              "ToolTip": "C:\\Users\\Shivam\\Downloads\\API\\API\\appsettings.json",
+              "RelativeToolTip": "API\\appsettings.json",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAIAAAA/AAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
+              "WhenOpened": "2025-01-13T05:01:08.516Z"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
