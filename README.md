@@ -4,11 +4,9 @@ The e-commerce app, still under development, has a functional backend in ASP.NET
 
 **Progress as of 16th January 2025**
 
-The e-commerce app development is in progress with the following feature completed:
 
+The e-commerce app development is in progress. Till now:
 
-**User authorization system:**
+Frontend includes a login page and logout functionality.
 
-Sign-in and logout functionality.
-
-Further updates will be made as development continues.
+Further updates will follow as development continues.
