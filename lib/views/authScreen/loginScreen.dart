@@ -1,10 +1,8 @@
 import 'package:e_comapp/consts/consts.dart';
 import 'package:e_comapp/consts/list.dart';
-import 'package:e_comapp/views/adminpanel/adminpanel.dart';
 import 'package:e_comapp/views/adminpanel/authnav.dart';
 import 'package:e_comapp/views/authScreen/signupScreen.dart';
 import 'package:e_comapp/views/category_screen/category_item_details.dart';
-import 'package:e_comapp/views/homeScreen/homescreen.dart';
 import 'package:e_comapp/views/widgets_common/applogo.dart';
 import 'package:e_comapp/views/widgets_common/bg_widgets.dart';
 import 'package:e_comapp/views/widgets_common/custom_textfield.dart';
@@ -47,11 +45,8 @@ class AuthService {
       final response = await http.post(
         url,
         headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({
-          'userName': name,
-          'mobileNumber': mobileNumber,
-          'password': password
-        }),
+        body: jsonEncode(
+            {'name': name, 'mobileNumber': mobileNumber, 'password': password}),
       );
 
       if (response.statusCode == 200) {
@@ -123,8 +118,10 @@ class _LoginscreenState extends State<Loginscreen> {
 
         if (role == 'INDIVIDUAL') {
           Get.to(() => Home());
+          showFloatingSnackBar("Welcome User");
         } else if (role == 'newRole15545') {
           Get.to(() => Authnav());
+          showFloatingSnackBar("Welcome SUPER ADMIN");
         } else {
           setState(() {
             _errorMessage = "Unknown role. Access denied.";
@@ -137,6 +134,25 @@ class _LoginscreenState extends State<Loginscreen> {
         print('Decoding Error: $e');
       }
     }
+  }
+
+  // Function to show the floating snackbar
+  void showFloatingSnackBar(String message) {
+    final snackBar = SnackBar(
+      content: Text(
+        message,
+        style: TextStyle(
+          fontSize: 16, // Customize font size
+          color: Colors.white, // Customize text color
+        ),
+      ),
+      duration:
+          Duration(seconds: 3), // Set the duration (3 seconds in this example)
+      backgroundColor: Colors.red, // Customize background color
+      behavior: SnackBarBehavior.floating, // Make it float above other elements
+    );
+
+    ScaffoldMessenger.of(context).showSnackBar(snackBar);
   }
 
   @override

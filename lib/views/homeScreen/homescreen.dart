@@ -1,10 +1,7 @@
 import 'package:e_comapp/consts/consts.dart';
 import 'package:e_comapp/consts/list.dart';
-import 'package:e_comapp/controller/home_controller.dart';
 import 'package:e_comapp/views/homeScreen/components/featuredButtons.dart';
 import 'package:e_comapp/views/widgets_common/homebuttons.dart';
-import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 
 class Homescreen extends StatelessWidget {
   const Homescreen({super.key});

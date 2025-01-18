@@ -30,6 +30,7 @@ class _SignupscreenState extends State<Signupscreen> {
       _errorMessage = null;
     });
 
+    // Handle sign-up request
     final response = await _authService.signUp(
       _nameController.text,
       _phoneController.text,
@@ -87,7 +88,9 @@ class _SignupscreenState extends State<Signupscreen> {
                 Align(
                   alignment: Alignment.centerRight,
                   child: TextButton(
-                    onPressed: () {},
+                    onPressed: () {
+                      // Forgot password logic
+                    },
                     child: forgetPass.text.color(Colors.blue).make(),
                   ),
                 ),
@@ -129,10 +132,15 @@ class _SignupscreenState extends State<Signupscreen> {
                                   fontFamily: regular, color: redColor)),
                         ]),
                       ),
-                    )
+                    ),
                   ],
                 ),
                 20.heightBox,
+                if (_errorMessage != null)
+                  Text(
+                    _errorMessage!,
+                    style: TextStyle(color: Colors.red),
+                  ),
                 ourButton(
                   color: isCheck == true ? redColor : lightGrey,
                   title: signup,

@@ -154,6 +154,7 @@ class ProfileScreen extends StatelessWidget {
                   .shadowSm
                   .margin(const EdgeInsets.all(12))
                   .padding(const EdgeInsets.symmetric(horizontal: 16))
+                  .width(context.screenWidth - 70)
                   .make(),
             ],
           ),

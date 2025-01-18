@@ -23,6 +23,7 @@ const alreadyHaveAccount = "Already have an account ? ";
 const home = "Home",
     DashBoard = "Dashboard",
     categories = "Categories",
+    userRole = " User Role",
     cart = "Cart",
     account = "Account";
 

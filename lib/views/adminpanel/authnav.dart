@@ -2,6 +2,7 @@ import 'package:e_comapp/consts/consts.dart';
 import 'package:e_comapp/consts/images.dart';
 import 'package:e_comapp/controller/home_controller.dart';
 import 'package:e_comapp/views/adminpanel/adminpanel.dart';
+import 'package:e_comapp/views/adminpanel/user_role.dart';
 import 'package:e_comapp/views/profile_screen/profilescreen.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -17,18 +18,33 @@ class Authnav extends StatelessWidget {
 
     var navbarItem = [
       BottomNavigationBarItem(
-          icon: Image.asset(icHome, width: 26), label: DashBoard),
-      // BottomNavigationBarItem(
-      //     icon: Image.asset(icCategories, width: 26), label: categories),
+          icon: Image.asset(
+            icHome,
+            width: 26,
+            color: Vx.white,
+          ),
+          label: DashBoard),
+      BottomNavigationBarItem(
+          icon: Image.asset(
+            icCategories,
+            width: 26,
+            color: whiteColor,
+          ),
+          label: userRole),
       // BottomNavigationBarItem(
       //     icon: Image.asset(icCart, width: 26), label: cart),
       BottomNavigationBarItem(
-          icon: Image.asset(icProfile, width: 26), label: account)
+          icon: Image.asset(
+            icProfile,
+            width: 26,
+            color: whiteColor,
+          ),
+          label: account)
     ];
 
     var navBody = [
       AdminPanel(),
-      // CategoryScreen(),
+      UserRole(),
       // CartScreen(),
       ProfileScreen()
     ];
@@ -45,10 +61,10 @@ class Authnav extends StatelessWidget {
       bottomNavigationBar: Obx(
         () => BottomNavigationBar(
           currentIndex: controller.currentNavIndex.value,
-          selectedItemColor: redColor,
+          selectedItemColor: whiteColor,
           selectedLabelStyle: const TextStyle(fontFamily: semibold),
           type: BottomNavigationBarType.fixed,
-          backgroundColor: whiteColor,
+          backgroundColor: redColor,
           items: navbarItem,
           onTap: (value) {
             controller.currentNavIndex.value = value;

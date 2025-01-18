@@ -6,5 +6,5 @@ const Map<int, String> roleLevelsMap = {
   4: "MANAGEMENT",
   5: "AUTHORITY",
   6: "ADMIN",
-  7: "SUPREME",
+  7: "SUPER ADMIN",
 };
