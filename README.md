@@ -14,3 +14,10 @@ Frontend includes a login page and logout functionality.
 Further updates will follow as development continues.
 
 
+
+**Progress as of 18th January 2025**
+
+
+The sign-in, log-in, and log-out functionalities are fully operational and integrated with the backend. 
+
+
