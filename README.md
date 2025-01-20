@@ -20,4 +20,8 @@ Further updates will follow as development continues.
 
 The sign-in, log-in, and log-out functionalities are fully operational and integrated with the backend. 
 
+**Progress as of 20th January 2025**
+
+The home page, profile page, and category page has been made statically.
+
 
