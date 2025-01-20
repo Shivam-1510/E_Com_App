@@ -4,7 +4,6 @@ import 'package:e_comapp/views/widgets_common/bg_widgets.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:flutter/material.dart';
 
 class UserRole extends StatefulWidget {
   const UserRole({super.key});
@@ -16,7 +15,7 @@ class UserRole extends StatefulWidget {
 class _UserRoleState extends State<UserRole> {
   final String baseUrl = "https://localhost:7157";
   final searchController = TextEditingController();
-
+  List<Map<String, dynamic>> roles2 = []; // List to store user roles
   // List to store the fetched user data
   List<Map<String, dynamic>> userData = [];
 
@@ -31,18 +30,23 @@ class _UserRoleState extends State<UserRole> {
     6: "ADMIN",
     7: "SUPER ADMIN",
   };
+
   late List<String> roleLevels;
-  String? selectedRoleLevel; // Store the selected role level as a String
+  String? selectedRoleLevel;
+  int? selectRoleLevel2; // Store the selected role level as an integer
 
   int? userRoleLevel; // Variable to store the user's assigned role level
 
   bool isLoading = true;
+  String? selectedRoleCode;
 
   @override
   void initState() {
     super.initState();
     roleLevels = roleLevelsMap.values.toList();
-    fetchUsers(); // Fetch the user data when the screen loads
+    fetchRoles();
+
+    // Fetch the user data when the screen loads
   }
 
   // Function to get the stored token
@@ -53,9 +57,54 @@ class _UserRoleState extends State<UserRole> {
   }
 
   // Function to fetch users from the API
-  Future<void> fetchUsers() async {
+
+  Future<void> fetchRoles() async {
     final token = await getToken(); // Get the token from shared preferences
 
+    if (token == null) {
+      return;
+    }
+
+    final url = Uri.parse('$baseUrl/userrole'); // API endpoint for users
+
+    try {
+      final response = await http.get(
+        url,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final List<dynamic> roles2Data = jsonDecode(response.body);
+        setState(() {
+          roles2 = roles2Data.map((role) {
+            return {
+              'roleCode': role['roleCode']?.toString() ?? 'N/A',
+              'roleName': role['roleName']?.toString() ?? 'N/A',
+              'roleLevel': role['roleLevel']?.toString() ?? 'N/A',
+            };
+          }).toList();
+          isLoading = false;
+        });
+      } else {
+        print('Failed to fetch users: ${response.statusCode}');
+        setState(() {
+          isLoading = false;
+        });
+      }
+    } catch (e) {
+      print('Error fetching users: $e');
+      setState(() {
+        isLoading = false;
+      });
+    }
+  }
+
+  // Function to fetch users based on roleCode
+  Future<void> fetchUsers(String roleCode) async {
+    final token = await getToken();
     if (token == null) {
       print("No token found. Please log in.");
       setState(() {
@@ -64,7 +113,13 @@ class _UserRoleState extends State<UserRole> {
       return;
     }
 
-    final url = Uri.parse('$baseUrl/user/users'); // API endpoint for users
+    final encodedRoleCode =
+        base64Encode(utf8.encode(roleCode)); // Encode roleCode
+    // final encodedUserCode =
+    //     base64Encode(utf8.encode(userCode)); // Encode userCode
+
+    final url = Uri.parse(
+        '$baseUrl/user/users?roleCode=$encodedRoleCode'); // API endpoint
 
     try {
       final response = await http.get(
@@ -79,21 +134,15 @@ class _UserRoleState extends State<UserRole> {
         final List<dynamic> rolesData = jsonDecode(response.body);
         setState(() {
           userData = rolesData.map((role) {
-            final roleLevel = role['userRole']['roleLevel'] ?? -1;
-            if (roleLevel != -1) {
-              userRoleLevel = roleLevel; // Store the user's role level
-            }
             return {
               'name': role['user']['name'] ?? 'N/A',
               'mobile': role['user']['mobileNumber'] ?? 'N/A',
               'status': role['user']['isActive'] ?? 'N/A',
               'lastLogin': role['user']['lastLogin'] ?? 'N/A',
               'createdBy': role['user']['createdBy'] ?? 'N/A',
-              'roleLevel': roleLevel,
+              'roleLevel': role['userRole']['roleLevel'] ?? 'N/A',
             };
           }).toList();
-          // Set the selected role level for the dropdown
-          selectedRoleLevel = roleLevelsMap[userRoleLevel ?? -1];
           isLoading = false;
         });
       } else {
@@ -112,10 +161,7 @@ class _UserRoleState extends State<UserRole> {
 
   // Function to show user details dialog
   void showUserDetails(Map<String, dynamic> user) {
-    // Extract the roleLevel from userRole
     final roleLevel = user['roleLevel'] ?? -1; // Default to -1 if missing
-
-    // Map the roleLevel value using the roleLevelsMap
     final roleLevelText = roleLevelsMap[roleLevel] ??
         'Unknown'; // Default to 'Unknown' if not found
 
@@ -133,14 +179,13 @@ class _UserRoleState extends State<UserRole> {
               Text("Status: ${user['status']}"),
               Text("Last Login: ${user['lastLogin']}"),
               Text("Created By: ${user['createdBy']}"),
-              Text(
-                  "Role Level: $roleLevelText"), // Display the role level as a string
+              Text("Role Level: $roleLevelText"),
             ],
           ),
           actions: [
             TextButton(
               onPressed: () {
-                Navigator.of(context).pop(); // Close the dialog
+                Navigator.of(context).pop();
               },
               child: const Text("Close"),
             ),
@@ -152,7 +197,7 @@ class _UserRoleState extends State<UserRole> {
 
   // Filter users based on the selected role level
   List<Map<String, dynamic>> getFilteredUsers() {
-    if (selectedRoleLevel == null) return [];
+    if (selectRoleLevel2 == null) return [];
 
     final selectedRoleIndex = roleLevels.indexOf(selectedRoleLevel!);
     if (selectedRoleIndex == -1) return [];
@@ -193,32 +238,37 @@ class _UserRoleState extends State<UserRole> {
                     ),
                   ),
                   15.heightBox,
-                  // Dropdown and Create User button
                   Row(
                     children: [
                       // Dropdown Button wrapped in Flexible
                       Flexible(
                         child: DropdownButton<String>(
-                          hint: Text(
-                            selectedRoleLevel ?? "Select Role Level",
-                          ),
-                          value: selectedRoleLevel,
-                          items: roleLevels.map((level) {
+                          hint: const Text("Select Role"), // Default hint
+                          value:
+                              selectedRoleCode, // Currently selected roleCode
+                          items: roles2.map((role) {
                             return DropdownMenuItem<String>(
-                              value: level,
-                              child: Text(level),
+                              value:
+                                  role['roleCode'], // Use roleCode as the value
+                              child: Text(role['roleName'] ??
+                                  "Unknown"), // Display roleName
                             );
                           }).toList(),
-                          onChanged: (String? newValue) {
+                          onChanged: (String? roleCode) async {
                             setState(() {
-                              selectedRoleLevel = newValue;
+                              selectedRoleCode = roleCode;
+                              // Update the selected role code
+                              fetchUsers(selectedRoleCode!);
                             });
                           },
-                          isExpanded: true,
+                          isExpanded:
+                              true, // Ensures the dropdown takes the full width
                         ),
                       ),
+
                       20.widthBox,
                       // Create User Button
+
                       ElevatedButton.icon(
                         style: ElevatedButton.styleFrom(
                           backgroundColor:
@@ -426,72 +476,80 @@ class _UserRoleState extends State<UserRole> {
                   ),
                   15.heightBox,
                   // Loading indicator
+                  // Loading indicator
                   isLoading
-                      ? CircularProgressIndicator()
+                      ? const CircularProgressIndicator()
                       : SingleChildScrollView(
                           scrollDirection: Axis.horizontal,
                           child: DataTable(
                             columnSpacing: 30,
                             columns: const [
                               DataColumn(
-                                  label: Text(
-                                "User Name",
-                                style: TextStyle(fontFamily: bold),
-                              )),
-                              // DataColumn(
-                              //     label: Text(
-                              //   "Phone Number",
-                              //   style: TextStyle(fontFamily: bold),
-                              // )),
+                                label: Text(
+                                  "User Name",
+                                  style: TextStyle(fontFamily: bold),
+                                ),
+                              ),
                               DataColumn(
-                                  label: Text(
-                                "Actions",
-                                style: TextStyle(fontFamily: bold),
-                              )),
+                                label: Text(
+                                  "Phone Number",
+                                  style: TextStyle(fontFamily: bold),
+                                ),
+                              ),
+                              DataColumn(
+                                label: Text(
+                                  "Actions",
+                                  style: TextStyle(fontFamily: bold),
+                                ),
+                              ),
                             ],
-                            rows: getFilteredUsers().isNotEmpty
-                                ? getFilteredUsers().map((user) {
-                                    return DataRow(cells: [
-                                      DataCell(Text(user["name"])),
-                                      // DataCell(Text(user["mobile"])),
-                                      DataCell(
-                                        Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.start,
-                                          children: [
-                                            IconButton(
-                                              icon: const Icon(Icons.visibility,
-                                                  color: Colors.green),
-                                              onPressed: () {
-                                                showUserDetails(
-                                                    user); // Show details dialog
-                                              },
-                                            ),
-                                            IconButton(
-                                              icon: const Icon(Icons.edit,
-                                                  color: Colors.blue),
-                                              onPressed: () {
-                                                // Edit functionality
-                                              },
-                                            ),
-                                            IconButton(
-                                              icon: const Icon(Icons.delete,
-                                                  color: Colors.red),
-                                              onPressed: () {
-                                                // Delete functionality
-                                              },
-                                            ),
-                                          ],
+                            rows: userData.isNotEmpty
+                                ? userData.map((user) {
+                                    return DataRow(
+                                      cells: [
+                                        DataCell(Text(user["name"])),
+                                        DataCell(Text(user["mobile"])),
+                                        DataCell(
+                                          Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.start,
+                                            children: [
+                                              IconButton(
+                                                icon: const Icon(
+                                                    Icons.visibility,
+                                                    color: Colors.green),
+                                                onPressed: () {
+                                                  showUserDetails(user);
+                                                },
+                                              ),
+                                              IconButton(
+                                                icon: const Icon(Icons.edit,
+                                                    color: Colors.blue),
+                                                onPressed: () {
+                                                  // Edit functionality
+                                                },
+                                              ),
+                                              IconButton(
+                                                icon: const Icon(Icons.delete,
+                                                    color: Colors.red),
+                                                onPressed: () {
+                                                  // Delete functionality
+                                                },
+                                              ),
+                                            ],
+                                          ),
                                         ),
-                                      ),
-                                    ]);
+                                      ],
+                                    );
                                   }).toList()
                                 : [
-                                    DataRow(cells: [
-                                      DataCell(Text("No users found")),
-                                      DataCell(Text("")),
-                                      DataCell(Text("")),
-                                    ])
+                                    const DataRow(
+                                      cells: [
+                                        DataCell(Text("No users found")),
+                                        DataCell(Text("")),
+                                        DataCell(Text("")),
+                                      ],
+                                    )
                                   ],
                           ),
                         ),
