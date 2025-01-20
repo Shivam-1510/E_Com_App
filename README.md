@@ -1,27 +1,23 @@
-# e_comapp
+# E_Com_App
+The e-commerce app, still under development, has a functional backend in ASP.NET. Key features include user authorization with sign-in, sign-out, and new user registration fully implemented. The project is ongoing, with regular updates planned to enhance functionality and add new features.
 
-<<<<<<< HEAD
-A new Flutter project.
-=======
 The API folder is backend
 
->>>>>>> 25dfd754cf7d036f4be6716c3e0c49532dadef42
 
-## Getting Started
+**Progress as of 16th January 2025**
 
-This project is a starting point for a Flutter application.
 
-A few resources to get you started if this is your first Flutter project:
+The e-commerce app development is in progress. Till now:
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+Frontend includes a login page and logout functionality.
 
-<<<<<<< HEAD
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
-=======
 Further updates will follow as development continues.
 
 
->>>>>>> 25dfd754cf7d036f4be6716c3e0c49532dadef42
+
+**Progress as of 18th January 2025**
+
+
+The sign-in, log-in, and log-out functionalities are fully operational and integrated with the backend. 
+
+
