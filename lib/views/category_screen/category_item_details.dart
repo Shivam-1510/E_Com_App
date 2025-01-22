@@ -11,8 +11,8 @@ import 'package:e_comapp/views/widgets_common/our_button.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-class Home extends StatelessWidget {
-  const Home({super.key});
+class CategoryItemDetails extends StatelessWidget {
+  const CategoryItemDetails({super.key});
 
   @override
   Widget build(BuildContext context) {

@@ -1,5 +1,4 @@
 import 'package:e_comapp/consts/consts.dart';
-import 'package:e_comapp/views/authScreen/loginScreen.dart';
 import 'package:e_comapp/views/homeScreen/homescreen.dart';
 import 'package:e_comapp/views/widgets_common/applogo.dart';
 import 'package:e_comapp/views/widgets_common/bg_widgets.dart';
@@ -7,6 +6,7 @@ import 'package:e_comapp/views/widgets_common/custom_textfield.dart';
 import 'package:e_comapp/views/widgets_common/our_button.dart';
 import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:e_comapp/services/authservice.dart'; // Updated import path
 
 class Signupscreen extends StatefulWidget {
   const Signupscreen({super.key});
@@ -30,26 +30,40 @@ class _SignupscreenState extends State<Signupscreen> {
       _errorMessage = null;
     });
 
-    // Handle sign-up request
-    final response = await _authService.signUp(
-      _nameController.text,
-      _phoneController.text,
-      _passwordController.text,
-    );
+    try {
+      // Call the signup function
+      final response = await _authService.signUp(
+        _nameController.text,
+        _phoneController.text,
+        _passwordController.text,
+      );
 
-    setState(() {
-      _isLoading = false;
-    });
-
-    if (response.containsKey('error')) {
       setState(() {
-        _errorMessage = response['error'];
+        _isLoading = false;
       });
-    } else {
-      final token = response['token']; // Assuming response has a 'token'
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setString('authToken', token); // Save token
-      Get.to(() => Homescreen());
+
+      if (response.containsKey('error')) {
+        // Show the error from the response
+        setState(() {
+          _errorMessage = response['error'];
+        });
+      } else if (response.containsKey('token')) {
+        // Handle a successful response with a token
+        final token = response['token'];
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('authToken', token); // Save token locally
+        Get.to(() => Homescreen());
+      } else {
+        // Handle an unexpected response structure
+        setState(() {
+          _errorMessage = "Unexpected response from the server.";
+        });
+      }
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+        _errorMessage = "An error occurred: $e";
+      });
     }
   }
 

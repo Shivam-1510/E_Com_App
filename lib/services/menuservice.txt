@@ -1,0 +1,39 @@
+import 'dart:convert';
+
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:http/http.dart' as http;
+
+class MenuService {
+  final String baseUrl = "https://localhost:7157";
+  bool isLoading = true;
+
+  // Function to get the stored token
+  Future<String?> getToken() async {
+    final prefs = await SharedPreferences.getInstance();
+    String? token = prefs.getString('authToken');
+    return token;
+  }
+
+  // funtion to get menus
+  Future<dynamic> fetchMenu() async {
+    final token = await getToken();
+    if (token == null) {
+      return;
+    }
+    final url = Uri.parse('$baseUrl/menu');
+
+    try {
+      final response = await http.get(url, headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      });
+      if (response.statusCode == 200) {
+        final List<dynamic> menudata = jsonDecode(response.body);
+      } else {
+        print('Failed to fetch menus: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error fetching menus: $e');
+    }
+  }
+}
