@@ -25,3 +25,18 @@ The sign-in, log-in, and log-out functionalities are fully operational and integ
 The home page, profile page, and category page has been made statically.
 
 
+**Progress as of 22th January 2025**
+
+The roles and users management pages have been developed and successfully integrated with the backend.
+
+These pages allow the following functionalities:
+
+View detailed information about users and roles.
+
+Edit user and role information.
+
+Delete users or roles as needed.
+
+This marks a significant step forward in the app's development. Further updates will continue to enhance the app's features and usability.
+
+
