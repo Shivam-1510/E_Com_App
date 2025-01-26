@@ -3,6 +3,7 @@ import 'package:e_comapp/consts/consts.dart';
 import 'package:e_comapp/views/Splashscreen/splashscreen.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'utils/snackbar_util.dart';  // Utility function import karo
 
 void main() {
   runApp(const MyApp());
@@ -25,6 +26,7 @@ class MyApp extends StatelessWidget {
               backgroundColor: Colors.transparent),
           fontFamily: regular,
         ),
+        scaffoldMessengerKey: scaffoldMessengerKey, // Set key here
         home: const Splashscreen());
   }
 }

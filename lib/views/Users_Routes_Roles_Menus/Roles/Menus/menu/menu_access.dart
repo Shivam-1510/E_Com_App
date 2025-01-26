@@ -12,6 +12,7 @@ class MenuAccess extends StatefulWidget {
 
 class _MenuAccessState extends State<MenuAccess> {
   final searchController = TextEditingController();
+  bool isActive = false;
   @override
   Widget build(BuildContext context) {
     return bgWidget(
@@ -44,6 +45,27 @@ class _MenuAccessState extends State<MenuAccess> {
                   ),
                 ),
                 SizedBox(height: 20),
+                Text('Status: ',
+                    style:
+                        TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                Switch(
+                  value: isActive,
+                  onChanged: (value) {
+                    setState(() {
+                      isActive = value;
+                    });
+                  },
+                  activeColor: Colors.green,
+                  inactiveThumbColor: Colors.grey,
+                ),
+                Text(
+                  isActive ? 'Active' : 'Inactive',
+                  style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: isActive ? Colors.green : Colors.red),
+                ),
+                const SizedBox(height: 20),
               ],
             )
                 .box

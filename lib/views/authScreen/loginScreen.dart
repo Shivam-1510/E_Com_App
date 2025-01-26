@@ -1,16 +1,15 @@
 import 'package:e_comapp/consts/consts.dart';
 import 'package:e_comapp/consts/list.dart';
+import 'package:e_comapp/utils/snackbar_util.dart';
 import 'package:e_comapp/views/Users_Routes_Roles_Menus/Roles/Menus/authnav.dart';
 import 'package:e_comapp/views/authScreen/signupScreen.dart';
-import 'package:e_comapp/views/category_screen/category_item_details.dart';
-import 'package:e_comapp/views/homeScreen/home.dart';
+import 'package:e_comapp/views/homeScreen/homenav.dart';
 import 'package:e_comapp/views/widgets_common/applogo.dart';
 import 'package:e_comapp/views/widgets_common/bg_widgets.dart';
 import 'package:e_comapp/views/widgets_common/custom_textfield.dart';
 import 'package:e_comapp/views/widgets_common/our_button.dart';
 import 'package:e_comapp/services/authservice.dart';
 import 'package:get/get.dart';
-import 'package:http/http.dart';
 import 'package:jwt_decoder/jwt_decoder.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -45,7 +44,7 @@ class _LoginscreenState extends State<Loginscreen> {
 
     if (response.containsKey('error')) {
       _errorMessage = response['error'];
-      showFloatingSnackBar("Invalid credentials. Please try again.");
+      showGlobalSnackBar("Invalid credentials. Please try again.");
       print('Login Error: $_errorMessage');
       return;
     }
@@ -55,7 +54,7 @@ class _LoginscreenState extends State<Loginscreen> {
 
     try {
       if (JwtDecoder.isExpired(token)) {
-        showFloatingSnackBar("Session expired. Please log in again.");
+        showGlobalSnackBar("Session expired. Please log in again.");
         return;
       }
 
@@ -68,32 +67,17 @@ class _LoginscreenState extends State<Loginscreen> {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('authToken', token);
 
-      if (role=='INDIVIDUAL'){
+      if (role == 'INDIVIDUAL') {
         Get.offAll(() => Home());
-        showFloatingSnackBar("Welcome, User!");
-      }else{
+        showGlobalSnackBar("Welcome, User!");
+      } else {
         Get.offAll(() => Authnav());
-        showFloatingSnackBar("Welcome!");
+        showGlobalSnackBar("Welcome!");
       }
-      
     } catch (e) {
-      showFloatingSnackBar("Login failed. Please try again.");
+      showGlobalSnackBar("Login failed. Please try again.");
       print('Token Decoding Error: $e');
     }
-  }
-
-  void showFloatingSnackBar(String message) {
-    final snackBar = SnackBar(
-      content: Text(
-        message,
-        style: const TextStyle(fontSize: 16, color: Colors.white),
-      ),
-      duration: const Duration(seconds: 3),
-      backgroundColor: Colors.red,
-      behavior: SnackBarBehavior.floating,
-    );
-
-    ScaffoldMessenger.of(context).showSnackBar(snackBar);
   }
 
   @override

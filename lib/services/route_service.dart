@@ -4,50 +4,49 @@ import 'package:e_comapp/utils/snackbar_util.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 
-class MenuService {
+class RouteService {
   final String baseUrl = "https://localhost:7157";
-  bool isLoading = true;
+  bool isloading = true;
 
-  // Function to get the stored token
+  //Funciton get the stored token
   Future<String?> getToken() async {
     final prefs = await SharedPreferences.getInstance();
     String? token = prefs.getString('authToken');
     return token;
   }
 
-  // funtion to get menus
-  Future<dynamic> fetchMenu() async {
+  // Funtion to get Routes
+  Future<dynamic> fetchRoute() async {
     final token = await getToken();
     if (token == null) {
       return;
     }
-    final url = Uri.parse('$baseUrl/menu');
-
+    final url = Uri.parse('$baseUrl/route');
     try {
       final response = await http.get(url, headers: {
         'Content-Type': 'application/json',
         'Authorization': 'Bearer $token',
       });
       if (response.statusCode == 200) {
-        final List<dynamic> menuData = jsonDecode(response.body);
-        return menuData;
+        final List<dynamic> routeData = jsonDecode(response.body);
+        return routeData;
       } else {
-        print('Failed to fetch menus: ${response.statusCode}');
+        print('Failed to fetch routes: ${response.statusCode}');
       }
     } catch (e) {
-      print('Error fetching menus: $e');
+      print('Error fetching routes: $e');
     }
   }
 
-  // Function to create menus
-  Future<Map<String, dynamic>?> createMenu(
-      String menuName, String path, String icon, bool isActive) async {
+  //Funtion to create routes
+  Future<Map<String, dynamic>?> createRoute(
+      String routeName, String path, bool isActive) async {
     final token = await getToken();
     if (token == null) {
-      print('No token found . Please log in.');
+      print('No token found. Please log in.');
       return null;
     }
-    final url = Uri.parse('$baseUrl/menu/create');
+    final url = Uri.parse('$baseUrl/route/create');
     try {
       final response = await http.post(
         url,
@@ -56,68 +55,66 @@ class MenuService {
           'Authorization': 'Bearer $token',
         },
         body: jsonEncode({
-          'menuName': menuName,
+          'routeName': routeName,
           'path': path,
-          'icon': icon,
           'status': isActive,
         }),
       );
       if (response.statusCode == 200) {
-        showGlobalSnackBar('Menu Created Succesfully!');
-        final Map<String, dynamic> menusData = jsonDecode(response.body);
-        return menusData;
+        showGlobalSnackBar('Route Created Succesfully!');
+        final Map<String, dynamic> routesData = jsonDecode(response.body);
+        return routesData;
       } else {
-        print("Failed to create menu. Staus code:${response.statusCode}");
+        print('Failed to create route. Status Code ${response.statusCode}');
         return null;
       }
     } catch (e) {
-      print('Error creating menu:$e');
+      print('Error creating route:$e');
       return null;
     }
   }
 
-  // Delete Funciton
-  Future<void> deleteMenu(String menuCode) async {
-    if (menuCode.isEmpty) {
-      print("Invalid menuCode provided: $menuCode");
+  // Delete Function
+  Future<void> deleteRotue(String routeCode) async {
+    if (routeCode.isEmpty) {
+      print('Invalid menuCode provided: $routeCode');
       return;
     }
-    final encodedMenuCode = base64Encode(utf8.encode(menuCode));
+    final encodedRouteCode = base64Encode(utf8.encode(routeCode));
     final token = await getToken();
     if (token == null) {
       print('No token found. Please login.');
       return;
     }
-    final url = Uri.parse('$baseUrl/menu/delete?menuCode=${encodedMenuCode}');
+    final url =
+        Uri.parse('$baseUrl/route/delete?routeCode=${encodedRouteCode}');
     try {
       final response = await http.delete(
         url,
         headers: {
-          'Content-Type': 'application/json',
+          'Content-Type': 'applicaition/json',
           'Authorization': 'Bearer $token',
         },
       );
       if (response.statusCode == 200) {
-        showGlobalSnackBar('Menu Deleted Successfully!');
+        showGlobalSnackBar('Route Deleted Successfully!');
       } else {
         showGlobalSnackBar('Failed to delete Menu.');
       }
     } catch (e) {
-      print('Eror deleting menu: $e');
+      print('Error deleting route: $e');
     }
   }
 
-  // Update the menu
-  Future<Map<String, dynamic>?> updateMenu(int id, String menuCode,
-      String menuName, String path, String icon, bool isActive) async {
+  // Update the routes
+  Future<Map<String, dynamic>?> updateRoute(int id, String routeCode,
+      String routeName, String path, bool isActive) async {
     final token = await getToken();
     if (token == null) {
       print('No token found. Please log in.');
       return null;
     }
-
-    final url = Uri.parse('$baseUrl/menu/update');
-
+    final url = Uri.parse('$baseUrl/route/update');
     try {
       final response = await http.put(
         url,
@@ -127,25 +124,22 @@ class MenuService {
         },
         body: jsonEncode({
           'id': id,
-          'menuCode': menuCode,
-          'menuName': menuName,
+          'routeCode': routeCode,
+          'routeName': routeName,
           'path': path,
-          'icon': icon,
           'status': isActive,
         }),
       );
-
       if (response.statusCode == 200) {
-        final Map<String, dynamic> menuData = jsonDecode(response.body);
-        showGlobalSnackBar('Menu Updated Successfully!');
-        fetchMenu();
-        return menuData;
+        final Map<String, dynamic> routeData = jsonDecode(response.body);
+        showGlobalSnackBar('Route updated Successfully! ');
+        return routeData;
       } else {
-        print('Failed to update menu. Status code: ${response.statusCode}');
+        print('Falied to update menu. Status code: ${response.statusCode}');
         return null;
       }
     } catch (e) {
-      print('Error updating menu: $e');
+      print('Error updating route: $e');
       return null;
     }
   }

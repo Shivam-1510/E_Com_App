@@ -1,4 +1,5 @@
 import 'package:e_comapp/consts/consts.dart';
+import 'package:e_comapp/utils/snackbar_util.dart';
 import 'package:e_comapp/views/widgets_common/applogo.dart';
 import 'package:e_comapp/views/widgets_common/bg_widgets.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -43,9 +44,7 @@ class _RolesState extends State<Roles> {
       print("No token found. Please log in.");
       return;
     }
-
     final url = Uri.parse('$baseUrl/userrole'); // API endpoint for users
-
     try {
       final response = await http.get(
         url,
@@ -105,24 +104,17 @@ class _RolesState extends State<Roles> {
       );
       if (response.statusCode == 200) {
         // Assuming 200 is the success code for creation
-        print("Role added successfully!");
         fetchUsers(); // Refresh the roles list after adding
-
         // Show floating snackbar on success
-        showFloatingSnackBar("Role added successfully!");
+        showGlobalSnackBar("Role added successfully!");
       } else {
-        print('Failed to add role: ${response.statusCode}');
         fetchUsers();
-        print('Response body: ${response.body}');
-
-        // Show floating snackbar on failure
-        showFloatingSnackBar("Failed to add role. Please try again.");
+        showGlobalSnackBar("Failed to add role. Please try again.");
       }
     } catch (e) {
       print('Error adding role: $e');
-
       // Show floating snackbar in case of error
-      showFloatingSnackBar("An error occurred while adding the role.");
+      showGlobalSnackBar("An error occurred while adding the role.");
     }
   }
 
@@ -142,7 +134,6 @@ class _RolesState extends State<Roles> {
 
     final url =
         Uri.parse('$baseUrl/userrole/delete?RoleCode=${encodedRoleCode}');
-    print('Delete API URL: $url');
 
     try {
       final response = await http.delete(
@@ -156,9 +147,9 @@ class _RolesState extends State<Roles> {
       if (response.statusCode == 200) {
         print('Role deleted successfully.');
         fetchUsers();
-        showFloatingSnackBar("Role deleted successfully");
+        showGlobalSnackBar("Role deleted successfully");
       } else {
-        print('Failed to delete role. Status code: ${response.statusCode}');
+        showGlobalSnackBar('Failed to delete role.');
         print('Response body: ${response.body}');
       }
     } catch (e) {
@@ -198,11 +189,10 @@ class _RolesState extends State<Roles> {
       );
 
       if (response.statusCode == 200) {
-        print('Role updated successfully.');
         fetchUsers();
-        showFloatingSnackBar("Role updated successfully");
+        showGlobalSnackBar("Role updated successfully!");
       } else {
-        print('Failed to update role. Status code: ${response.statusCode}');
+        showGlobalSnackBar('Failed to update role.');
         print('Response body: ${response.body}');
       }
     } catch (e) {
@@ -210,24 +200,7 @@ class _RolesState extends State<Roles> {
     }
   }
 
-  // Function to show the floating snackbar
-  void showFloatingSnackBar(String message) {
-    final snackBar = SnackBar(
-      content: Text(
-        message,
-        style: TextStyle(
-          fontSize: 16, // Customize font size
-          color: Colors.white, // Customize text color
-        ),
-      ),
-      duration:
-          Duration(seconds: 3), // Set the duration (3 seconds in this example)
-      backgroundColor: Colors.red, // Customize background color
-      behavior: SnackBarBehavior.floating, // Make it float above other elements
-    );
 
-    ScaffoldMessenger.of(context).showSnackBar(snackBar);
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -636,12 +609,9 @@ class _RolesState extends State<Roles> {
                                                                     context)
                                                                 .pop();
                                                             ScaffoldMessenger
-                                                                    .of(context)
-                                                                .showSnackBar(
-                                                              SnackBar(
-                                                                  content: Text(
-                                                                      'Role updated successfully.')),
-                                                            );
+                                                                .of(context);
+                                                            showGlobalSnackBar(
+                                                                'Role updated successfully.');
                                                           },
                                                           child: Text(
                                                             'Update',
