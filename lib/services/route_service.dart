@@ -40,7 +40,7 @@ class RouteService {
 
   //Funtion to create routes
   Future<Map<String, dynamic>?> createRoute(
-      String routeName, String path, bool isActive) async {
+      String routeName, String path, bool isActive, String? parentCode) async {
     final token = await getToken();
     if (token == null) {
       print('No token found. Please log in.');
@@ -58,6 +58,7 @@ class RouteService {
           'routeName': routeName,
           'path': path,
           'status': isActive,
+          'parentCode': parentCode,
         }),
       );
       if (response.statusCode == 200) {
@@ -141,6 +142,29 @@ class RouteService {
     } catch (e) {
       print('Error updating route: $e');
       return null;
+    }
+  }
+
+  // Funtion to get subroutes and routes
+  Future<dynamic> fetchRouteandSubroute() async {
+    final token = await getToken();
+    if (token == null) {
+      return;
+    }
+    final url = Uri.parse('$baseUrl/route/getroutesandsubroutes');
+    try {
+      final response = await http.get(url, headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      });
+      if (response.statusCode == 200) {
+        final List<dynamic> routeData = jsonDecode(response.body);
+        return routeData;
+      } else {
+        print('Failed to fetch routes: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error fetching routes: $e');
     }
   }
 }

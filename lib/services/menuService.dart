@@ -28,6 +28,7 @@ class MenuService {
         'Content-Type': 'application/json',
         'Authorization': 'Bearer $token',
       });
+      
       if (response.statusCode == 200) {
         final List<dynamic> menuData = jsonDecode(response.body);
         return menuData;
@@ -40,13 +41,15 @@ class MenuService {
   }
 
   // Function to create menus
-  Future<Map<String, dynamic>?> createMenu(
-      String menuName, String path, String icon, bool isActive) async {
+
+  Future<Map<String, dynamic>?> createMenu(String menuName, String path,
+      String icon, bool isActive, String? parentCode) async {
     final token = await getToken();
     if (token == null) {
       print('No token found . Please log in.');
       return null;
     }
+
     final url = Uri.parse('$baseUrl/menu/create');
     try {
       final response = await http.post(
@@ -60,6 +63,7 @@ class MenuService {
           'path': path,
           'icon': icon,
           'status': isActive,
+          "parentCode": parentCode,
         }),
       );
       if (response.statusCode == 200) {
@@ -147,6 +151,29 @@ class MenuService {
     } catch (e) {
       print('Error updating menu: $e');
       return null;
+    }
+  }
+  // funtion to get menus and submenus
+  Future<dynamic> fetchMenuandSubmenu() async {
+    final token = await getToken();
+    if (token == null) {
+      return;
+    }
+    final url = Uri.parse('$baseUrl/menu/getmenusandsubmenus');
+
+    try {
+      final response = await http.get(url, headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      });
+      if (response.statusCode == 200) {
+        final List<dynamic> menuData = jsonDecode(response.body);
+        return menuData;
+      } else {
+        print('Failed to fetch menus: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error fetching menus: $e');
     }
   }
 }

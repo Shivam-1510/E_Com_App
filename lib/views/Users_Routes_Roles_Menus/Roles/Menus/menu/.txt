@@ -1,0 +1,53 @@
+Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: menuItems.keys.map((menu) {
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(menu,
+                                    style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold)),
+                                Switch(
+                                  value: switches[menu]!,
+                                  onChanged: (value) {
+                                    toggleSwitch(menu, value);
+                                  },
+                                  activeColor: Colors.green,
+                                  inactiveThumbColor: Colors.grey,
+                                ),
+                              ],
+                            ),
+                            ...menuItems[menu]!
+                                .map((subMenu) => Padding(
+                                      padding:
+                                          const EdgeInsets.only(left: 16.0),
+                                      child: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          Text(subMenu),
+                                          Switch(
+                                            value: switches[subMenu]!,
+                                            onChanged: (value) {
+                                              toggleSwitch(subMenu, value);
+                                            },
+                                            activeColor: Colors.green,
+                                            inactiveThumbColor: Colors.grey,
+                                          ),
+                                        ],
+                                      ),
+                                    ))
+                                .toList()
+                          ],
+                        )
+                            .box
+                            .white
+                            .padding(const EdgeInsets.all(16))
+                            .shadowSm
+                            .make();
+                      }).toList(),
+                    ),
