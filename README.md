@@ -30,3 +30,10 @@ The **API folder** contains the backend.
     - Delete users or roles as needed.
 
 This marks a significant milestone in the app's development. Further updates will enhance features and usability.
+
+### **Progress as of 26th January 2025**
+- Menus and routes have been created and successfully connected with the backend.
+- Enhancements made to navigation and backend interaction for better usability and performance.
+Further updates will focus on expanding functionality, improving UI/UX, and adding more dynamic features to enhance the overall user experience.
+
+
