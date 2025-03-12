@@ -1,6 +1,5 @@
 import 'package:e_comapp/consts/consts.dart';
 import 'package:e_comapp/consts/list.dart';
-import 'package:e_comapp/consts/strings.dart';
 import 'package:e_comapp/views/widgets_common/bg_widgets.dart';
 
 import 'package:get/get.dart';
@@ -51,7 +50,11 @@ class CategoryScreen extends StatelessWidget {
                     .outerShadowSm
                     .make()
                     .onTap(() {
-                  Get.to(() => CategoryDetails(title: categoriesList[index]));
+                  Get.to(() => CategoryDetails(
+                        title: categoriesList[index], // Passing category name
+                        selectedCategory:
+                            categoriesList[index], // New parameter
+                      ));
                 });
               }),
         ),

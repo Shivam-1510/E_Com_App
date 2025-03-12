@@ -1,16 +1,23 @@
 import 'package:e_comapp/consts/consts.dart';
 import 'package:flutter/material.dart';
 
-Widget customTextField({String? title, String? hint, controller, isPass}) {
+Widget customTextField({
+  String? title,
+  String? hint,
+  required TextEditingController controller,
+  bool isPass = false,
+  String? Function(String?)? validator, // Added validator parameter
+}) {
   return Column(
     crossAxisAlignment: CrossAxisAlignment.start, // Aligning text to the left
     children: [
-      title!.text.color(redColor).fontFamily(semibold).size(16).make(),
-      // Displaying the label text for the input field
+      if (title != null) // Null safety check for title
+        title.text.color(redColor).fontFamily(semibold).size(16).make(),
       5.heightBox, // Spacer between the label and the text field
       TextFormField(
         obscureText: isPass,
         controller: controller,
+        validator: validator, // Pass validator function here
         decoration: InputDecoration(
           hintStyle: TextStyle(
             fontFamily: semibold,

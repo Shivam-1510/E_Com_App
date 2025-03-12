@@ -1,9 +1,9 @@
 import 'package:e_comapp/consts/consts.dart';
-import 'package:e_comapp/services/fetch_roles_for_menu.dart';
 import 'package:e_comapp/services/getloginuesrrole.dart';
 import 'package:e_comapp/utils/snackbar_util.dart';
 import 'package:e_comapp/views/widgets_common/applogo.dart';
 import 'package:e_comapp/views/widgets_common/bg_widgets.dart';
+import 'package:e_comapp/views/widgets_common/drawer.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -16,9 +16,8 @@ class UserRole extends StatefulWidget {
 }
 
 class _UserRoleState extends State<UserRole> {
-  final String baseUrl = "https://localhost:7157";
+  final String baseUrl = "https://localhost:5001";
   final searchController = TextEditingController();
-  final UserService _userService = UserService();
   List<Map<String, dynamic>> roles2 = []; // List to store user roles
   // List to store the fetched user data
   List<Map<String, dynamic>> userData = [];
@@ -49,22 +48,21 @@ class _UserRoleState extends State<UserRole> {
   @override
   void initState() {
     super.initState();
-    fetchLoggedInUserRole(); // Fetch logged-in user role on load
+    fetchLoggedInUserDetails(); // Fetch logged-in user role on load
     roleLevels = roleLevelsMap.values.toList();
     fetchRoles();
   }
 
   // Fetch logged-in user role and update the state
-  Future<void> fetchLoggedInUserRole() async {
-    final roleLevel = await _userRoleService
-        .getUserRoleLevel(); // Fetch role level using the service
-    if (roleLevel != null) {
+  Future<void> fetchLoggedInUserDetails() async {
+    final userDetails =
+        await _userRoleService.getUserDetails(); // Fetch full user data
+
+    if (userDetails != null) {
       setState(() {
-        // Instead of storing 'roleLevel' in '_loggedInUser', store it in 'userRoleLevel'
-        userRoleLevel = roleLevel;
+        userRoleLevel = userDetails['roleLevel']; // Extract role level
+        // Store full user details if needed
       });
-    } else {
-      print("Failed to fetch logged-in user role");
     }
   }
 
@@ -111,13 +109,11 @@ class _UserRoleState extends State<UserRole> {
           isLoading = false;
         });
       } else {
-        print('Failed to fetch users: ${response.statusCode}');
         setState(() {
           isLoading = false;
         });
       }
     } catch (e) {
-      print('Error fetching users: $e');
       setState(() {
         isLoading = false;
       });
@@ -128,7 +124,6 @@ class _UserRoleState extends State<UserRole> {
   Future<void> fetchUsers(String roleCode) async {
     final token = await getToken();
     if (token == null) {
-      print("No token found. Please log in.");
       setState(() {
         isLoading = false;
       });
@@ -169,13 +164,11 @@ class _UserRoleState extends State<UserRole> {
           isLoading = false;
         });
       } else {
-        print('Failed to fetch users: ${response.statusCode}');
         setState(() {
           isLoading = false;
         });
       }
     } catch (e) {
-      print('Error fetching users: $e');
       setState(() {
         isLoading = false;
       });
@@ -188,7 +181,6 @@ class _UserRoleState extends State<UserRole> {
   ) async {
     final token = await getToken();
     if (token == null) {
-      print("No token found. Please log in.");
       setState(() {
         isLoading = false;
       });
@@ -228,13 +220,11 @@ class _UserRoleState extends State<UserRole> {
           isLoading = false;
         });
       } else {
-        print('Failed to fetch users: ${response.statusCode}');
         setState(() {
           isLoading = false;
         });
       }
     } catch (e) {
-      print('Error fetching users: $e');
       setState(() {
         isLoading = false;
       });
@@ -292,7 +282,6 @@ class _UserRoleState extends State<UserRole> {
   }) async {
     final token = await getToken(); // Retrieve the token
     if (token == null) {
-      print("No token found. Please log in.");
       return;
     }
 
@@ -323,14 +312,10 @@ class _UserRoleState extends State<UserRole> {
 
       if (response.statusCode == 200) {
         showGlobalSnackBar("User added successfully!");
-        print("User added successfully!");
       } else {
         showGlobalSnackBar("Failed to add user");
-        print("Failed to add user: ${response.body}");
       }
-    } catch (e) {
-      print("Error adding user: $e");
-    }
+    } catch (e) {}
   }
 
   // Filter users based on the selected role level
@@ -350,7 +335,6 @@ class _UserRoleState extends State<UserRole> {
   Future<void> deleteUser(String userCode) async {
     final token = await _userRoleService.getToken();
     if (token == null) {
-      print("No token found. Please log in.");
       return;
     }
 
@@ -370,372 +354,348 @@ class _UserRoleState extends State<UserRole> {
       if (response.statusCode == 200) {
         showGlobalSnackBar("User deleted successfully.");
         fetchRoles(); // Refresh roles after deletion
-      } else {
-        print('Failed to delete user. Status code: ${response.statusCode}');
-      }
-    } catch (e) {
-      print('Error deleting user: $e');
-    }
+      } else {}
+    } catch (e) {}
   }
 
   @override
   Widget build(BuildContext context) {
     return bgWidget(
       Scaffold(
+        appBar: AppBar(
+            title: Text(
+              'Users',
+              style: TextStyle(color: Colors.white),
+            ),
+            iconTheme: IconThemeData(color: Colors.white)),
+        drawer: CustomDrawer(),
         body: Center(
-          child: SingleChildScrollView(
-            scrollDirection: Axis.vertical,
-            physics: BouncingScrollPhysics(),
-            child: Column(
-              children: [
-                SizedBox(height: context.screenHeight * 0.02),
-                applogoWidget(),
-                10.heightBox,
-                "Users"
-                    .text
-                    .fontFamily(bold)
-                    .color(Color(0xFF2A2A2A))
-                    .size(18)
-                    .make(),
-                15.heightBox,
-                Column(
-                  children: [
-                    // Search Field
-                    TextField(
-                      controller: searchController,
-                      decoration: InputDecoration(
-                        hintText: 'Search...',
-                        prefixIcon: const Icon(Icons.search),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
+          child: Column(
+            children: [
+              SizedBox(height: context.screenHeight * 0.02),
+              applogoWidget(),
+              20.heightBox,
+              Column(
+                children: [
+                  // Search Field
+                  TextField(
+                    controller: searchController,
+                    decoration: InputDecoration(
+                      hintText: 'Search...',
+                      prefixIcon: const Icon(Icons.search),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
                       ),
                     ),
-                    15.heightBox,
-                    Row(
-                      children: [
-                        // Dropdown Button wrapped in Flexible
-                        Flexible(
-                          child: DropdownButton<String>(
-                            hint:
-                                const Text("Select Role Name"), // Default hint
-                            value:
-                                selectedRoleCode, // Currently selected roleCode
-                            items: roles2.map((role) {
-                              return DropdownMenuItem<String>(
-                                value: role[
-                                    'roleCode'], // Use roleCode as the value
-                                child: Text(role['roleName'] ??
-                                    "Unknown"), // Display roleName
-                              );
-                            }).toList(),
-                            onChanged: (String? roleCode) async {
-                              setState(() {
-                                selectedRoleCode = roleCode;
-                                // Update the selected role code
-                                fetchUsers(selectedRoleCode!);
-                              });
-                            },
-                            isExpanded:
-                                true, // Ensures the dropdown takes the full width
+                  ),
+                  15.heightBox,
+                  Row(
+                    children: [
+                      // Dropdown Button wrapped in Flexible
+                      Flexible(
+                        child: DropdownButton<String>(
+                          hint: const Text("Select Role Name"), // Default hint
+                          value:
+                              selectedRoleCode, // Currently selected roleCode
+                          items: roles2.map((role) {
+                            return DropdownMenuItem<String>(
+                              value:
+                                  role['roleCode'], // Use roleCode as the value
+                              child: Text(role['roleName'] ??
+                                  "Unknown"), // Display roleName
+                            );
+                          }).toList(),
+                          onChanged: (String? roleCode) async {
+                            setState(() {
+                              selectedRoleCode = roleCode;
+                              // Update the selected role code
+                              fetchUsers(selectedRoleCode!);
+                            });
+                          },
+                          isExpanded:
+                              true, // Ensures the dropdown takes the full width
+                        ),
+                      ),
+
+                      20.widthBox,
+                      // Create User Button
+
+                      ElevatedButton.icon(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor:
+                              Colors.red, // Replace with your redColor
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 12),
+                        ),
+                        icon: const Icon(Icons.add, color: Colors.white),
+                        label: const Text(
+                          "Create User",
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontFamily: 'bold', // Replace with your font name
+                            fontSize: 14,
                           ),
                         ),
+                        onPressed: () {
+                          showDialog(
+                            context: context,
+                            builder: (context) {
+                              String userName = '';
+                              String passWord = '';
+                              String mobileNumber = '';
+                              String email = '';
+                              String address = '';
+                              String pinCode = '';
+                              String panNumber = '';
+                              bool isActive = false;
 
-                        20.widthBox,
-                        // Create User Button
+                              return StatefulBuilder(
+                                builder: (context, setState) {
+                                  return Dialog(
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(16),
+                                    ),
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(16.0),
+                                      child: SingleChildScrollView(
+                                        child: Column(
+                                          mainAxisSize: MainAxisSize.min,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            // Title
+                                            Text(
+                                              "Register User",
+                                              style: TextStyle(
+                                                  fontSize: 18,
+                                                  fontFamily: 'bold'),
+                                            ),
+                                            const SizedBox(height: 20),
 
-                        ElevatedButton.icon(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor:
-                                Colors.red, // Replace with your redColor
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 16, vertical: 12),
-                          ),
-                          icon: const Icon(Icons.add, color: Colors.white),
-                          label: const Text(
-                            "Create User",
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontFamily: 'bold', // Replace with your font name
-                              fontSize: 14,
-                            ),
-                          ),
-                          onPressed: () {
-                            showDialog(
-                              context: context,
-                              builder: (context) {
-                                String userName = '';
-                                String passWord = '';
-                                String mobileNumber = '';
-                                String email = '';
-                                String address = '';
-                                String pinCode = '';
-                                String panNumber = '';
-                                bool isActive = false;
-                                String roleCode = '';
+                                            // User Name Field
+                                            TextField(
+                                              decoration: const InputDecoration(
+                                                labelText: "User Name",
+                                                border: OutlineInputBorder(),
+                                              ),
+                                              onChanged: (value) =>
+                                                  userName = value,
+                                            ),
+                                            const SizedBox(height: 20),
+                                            // PASSWORD
+                                            TextField(
+                                              decoration: const InputDecoration(
+                                                labelText: "Password",
+                                                border: OutlineInputBorder(),
+                                              ),
+                                              onChanged: (value) =>
+                                                  passWord = value,
+                                            ),
+                                            const SizedBox(height: 20),
 
-                                return StatefulBuilder(
-                                  builder: (context, setState) {
-                                    return Dialog(
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(16),
+                                            // Mobile Number Field
+                                            TextField(
+                                              decoration: const InputDecoration(
+                                                labelText: "Mobile Number",
+                                                border: OutlineInputBorder(),
+                                              ),
+                                              keyboardType: TextInputType.phone,
+                                              onChanged: (value) =>
+                                                  mobileNumber = value,
+                                            ),
+                                            const SizedBox(height: 20),
+
+                                            // Email Field
+                                            TextField(
+                                              decoration: const InputDecoration(
+                                                labelText: "E-Mail",
+                                                border: OutlineInputBorder(),
+                                              ),
+                                              keyboardType:
+                                                  TextInputType.emailAddress,
+                                              onChanged: (value) =>
+                                                  email = value,
+                                            ),
+                                            const SizedBox(height: 20),
+
+                                            // Address Field
+                                            TextField(
+                                              decoration: const InputDecoration(
+                                                labelText: "Address",
+                                                border: OutlineInputBorder(),
+                                              ),
+                                              onChanged: (value) =>
+                                                  address = value,
+                                            ),
+                                            const SizedBox(height: 20),
+
+                                            // Pin Code Field
+                                            TextField(
+                                              decoration: const InputDecoration(
+                                                labelText: "Pin Code",
+                                                border: OutlineInputBorder(),
+                                              ),
+                                              keyboardType:
+                                                  TextInputType.number,
+                                              onChanged: (value) =>
+                                                  pinCode = value,
+                                            ),
+                                            const SizedBox(height: 20),
+
+                                            // Pan Number Field
+                                            TextField(
+                                              decoration: const InputDecoration(
+                                                labelText: "Pan Number",
+                                                border: OutlineInputBorder(),
+                                              ),
+                                              onChanged: (value) =>
+                                                  panNumber = value,
+                                            ),
+                                            const SizedBox(height: 20),
+                                            // Dropdown
+                                            Flexible(
+                                              child: DropdownButton<String>(
+                                                hint: const Text(
+                                                    "Select Role"), // Default hint
+                                                value:
+                                                    selectedRoleCode, // Currently selected roleCode
+                                                items: roles2.map((role) {
+                                                  return DropdownMenuItem<
+                                                      String>(
+                                                    value: role[
+                                                        'roleCode'], // Use roleCode as the value
+                                                    child: Text(role[
+                                                            'roleName'] ??
+                                                        "Unknown"), // Display roleName
+                                                  );
+                                                }).toList(),
+                                                onChanged:
+                                                    (String? roleCode) async {
+                                                  setState(() {
+                                                    selectedRoleCode = roleCode;
+                                                    // Update the selected role code
+                                                    fetchUserRole(
+                                                        selectedRoleCode!);
+                                                  });
+                                                },
+                                                isExpanded:
+                                                    true, // Ensures the dropdown takes the full width
+                                              ),
+                                            ),
+
+                                            // Status Checkbox
+                                            Row(
+                                              children: [
+                                                Checkbox(
+                                                  value: isActive,
+                                                  onChanged: (value) =>
+                                                      setState(() => isActive =
+                                                          value ?? false),
+                                                ),
+                                                const Text("Is Active"),
+                                              ],
+                                            ),
+                                            const SizedBox(height: 20),
+
+                                            // Buttons
+                                            Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment
+                                                      .spaceBetween,
+                                              children: [
+                                                TextButton(
+                                                  onPressed: () =>
+                                                      Navigator.pop(context),
+                                                  child: const Text(
+                                                    "Cancel",
+                                                    style: TextStyle(
+                                                        color: redColor),
+                                                  ),
+                                                ),
+                                                ElevatedButton(
+                                                  onPressed: () {
+                                                    addUserToDatabase(
+                                                      roleCode: selectedRoleCode ??
+                                                          '', // Check if this has a valid value
+                                                      userName: userName,
+                                                      passWord: passWord,
+                                                      mobileNumber:
+                                                          mobileNumber,
+                                                      email: email,
+                                                      address: address,
+                                                      pinCode: pinCode,
+                                                      panNumber: panNumber,
+                                                      isActive: isActive,
+                                                    );
+
+                                                    Navigator.pop(context);
+                                                  },
+                                                  style:
+                                                      ElevatedButton.styleFrom(
+                                                    backgroundColor: redColor,
+                                                  ),
+                                                  child: Text(
+                                                    "Save",
+                                                    style: TextStyle(
+                                                        color: whiteColor),
+                                                  ),
+                                                )
+                                              ],
+                                            ),
+                                          ],
+                                        ),
                                       ),
-                                      child: Padding(
-                                        padding: const EdgeInsets.all(16.0),
-                                        child: SingleChildScrollView(
+                                    ),
+                                  );
+                                },
+                              );
+                            },
+                          );
+                        },
+                      ),
+                    ],
+                  ),
+                  15.heightBox,
+                  // Loading indicator
+                  // Loading indicator
+                  isLoading
+                      ? const CircularProgressIndicator()
+                      : Center(
+                          child: SingleChildScrollView(
+                            child: Column(
+                              children: userData.isNotEmpty
+                                  ? userData.map((user) {
+                                      return Card(
+                                        margin: const EdgeInsets.symmetric(
+                                            vertical: 8, horizontal: 16),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(12),
+                                        ),
+                                        elevation: 4,
+                                        child: Padding(
+                                          padding: const EdgeInsets.all(12),
                                           child: Column(
-                                            mainAxisSize: MainAxisSize.min,
                                             crossAxisAlignment:
                                                 CrossAxisAlignment.start,
                                             children: [
-                                              // Title
                                               Text(
-                                                "Register User",
-                                                style: TextStyle(
-                                                    fontSize: 18,
-                                                    fontFamily: 'bold'),
-                                              ),
-                                              const SizedBox(height: 20),
-
-                                              // User Name Field
-                                              TextField(
-                                                decoration:
-                                                    const InputDecoration(
-                                                  labelText: "User Name",
-                                                  border: OutlineInputBorder(),
-                                                ),
-                                                onChanged: (value) =>
-                                                    userName = value,
-                                              ),
-                                              const SizedBox(height: 20),
-                                              // PASSWORD
-                                              TextField(
-                                                decoration:
-                                                    const InputDecoration(
-                                                  labelText: "Password",
-                                                  border: OutlineInputBorder(),
-                                                ),
-                                                onChanged: (value) =>
-                                                    passWord = value,
-                                              ),
-                                              const SizedBox(height: 20),
-
-                                              // Mobile Number Field
-                                              TextField(
-                                                decoration:
-                                                    const InputDecoration(
-                                                  labelText: "Mobile Number",
-                                                  border: OutlineInputBorder(),
-                                                ),
-                                                keyboardType:
-                                                    TextInputType.phone,
-                                                onChanged: (value) =>
-                                                    mobileNumber = value,
-                                              ),
-                                              const SizedBox(height: 20),
-
-                                              // Email Field
-                                              TextField(
-                                                decoration:
-                                                    const InputDecoration(
-                                                  labelText: "E-Mail",
-                                                  border: OutlineInputBorder(),
-                                                ),
-                                                keyboardType:
-                                                    TextInputType.emailAddress,
-                                                onChanged: (value) =>
-                                                    email = value,
-                                              ),
-                                              const SizedBox(height: 20),
-
-                                              // Address Field
-                                              TextField(
-                                                decoration:
-                                                    const InputDecoration(
-                                                  labelText: "Address",
-                                                  border: OutlineInputBorder(),
-                                                ),
-                                                onChanged: (value) =>
-                                                    address = value,
-                                              ),
-                                              const SizedBox(height: 20),
-
-                                              // Pin Code Field
-                                              TextField(
-                                                decoration:
-                                                    const InputDecoration(
-                                                  labelText: "Pin Code",
-                                                  border: OutlineInputBorder(),
-                                                ),
-                                                keyboardType:
-                                                    TextInputType.number,
-                                                onChanged: (value) =>
-                                                    pinCode = value,
-                                              ),
-                                              const SizedBox(height: 20),
-
-                                              // Pan Number Field
-                                              TextField(
-                                                decoration:
-                                                    const InputDecoration(
-                                                  labelText: "Pan Number",
-                                                  border: OutlineInputBorder(),
-                                                ),
-                                                onChanged: (value) =>
-                                                    panNumber = value,                        
-                                              ),
-                                              const SizedBox(height: 20),
-                                              // Dropdown
-                                              Flexible(
-                                                child: DropdownButton<String>(
-                                                  hint: const Text(
-                                                      "Select Role"), // Default hint
-                                                  value:
-                                                      selectedRoleCode, // Currently selected roleCode
-                                                  items: roles2.map((role) {
-                                                    return DropdownMenuItem<
-                                                        String>(
-                                                      value: role[
-                                                          'roleCode'], // Use roleCode as the value
-                                                      child: Text(role[
-                                                              'roleName'] ??
-                                                          "Unknown"), // Display roleName
-                                                    );
-                                                  }).toList(),
-                                                  onChanged:
-                                                      (String? roleCode) async {
-                                                    setState(() {
-                                                      selectedRoleCode =
-                                                          roleCode;
-                                                      // Update the selected role code
-                                                      fetchUserRole(
-                                                          selectedRoleCode!);
-                                                    });
-                                                  },
-                                                  isExpanded:
-                                                      true, // Ensures the dropdown takes the full width
+                                                "User Name: ${user["name"] ?? "N/A"}",
+                                                style: const TextStyle(
+                                                  fontSize: 22,
+                                                  fontWeight: FontWeight.bold,
                                                 ),
                                               ),
-
-                                              // Status Checkbox
-                                              Row(
-                                                children: [
-                                                  Checkbox(
-                                                    value: isActive,
-                                                    onChanged: (value) =>
-                                                        setState(() =>
-                                                            isActive =
-                                                                value ?? false),
-                                                  ),
-                                                  const Text("Is Active"),
-                                                ],
-                                              ),
-                                              const SizedBox(height: 20),
-
-                                              // Buttons
-                                              Row(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment
-                                                        .spaceBetween,
-                                                children: [
-                                                  TextButton(
-                                                    onPressed: () =>
-                                                        Navigator.pop(context),
-                                                    child: const Text(
-                                                      "Cancel",
-                                                      style: TextStyle(
-                                                          color: redColor),
-                                                    ),
-                                                  ),
-                                                  ElevatedButton(
-                                                    onPressed: () {
-                                                      print(
-                                                          "RoleCode being sent: $roleCode");
-
-                                                      addUserToDatabase(
-                                                        roleCode:
-                                                            selectedRoleCode ??
-                                                                '', // Check if this has a valid value
-                                                        userName: userName,
-                                                        passWord: passWord,
-                                                        mobileNumber:
-                                                            mobileNumber,
-                                                        email: email,
-                                                        address: address,
-                                                        pinCode: pinCode,
-                                                        panNumber: panNumber,
-                                                        isActive: isActive,
-                                                      );
-
-                                                      Navigator.pop(context);
-                                                    },
-                                                    style: ElevatedButton
-                                                        .styleFrom(
-                                                      backgroundColor: redColor,
-                                                    ),
-                                                    child: Text(
-                                                      "Save",
-                                                      style: TextStyle(
-                                                          color: whiteColor),
-                                                    ),
-                                                  )
-                                                ],
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      ),
-                                    );
-                                  },
-                                );
-                              },
-                            );
-                          },
-                        ),
-                      ],
-                    ),
-                    15.heightBox,
-                    // Loading indicator
-                    // Loading indicator
-                    isLoading
-                        ? const CircularProgressIndicator()
-                        : Center(
-                            child: SingleChildScrollView(
-                              scrollDirection: Axis.horizontal,
-                              child: DataTable(
-                                columnSpacing: 30,
-                                columns: const [
-                                  DataColumn(
-                                    label: Text(
-                                      "User Name",
-                                      style: TextStyle(fontFamily: bold),
-                                    ),
-                                  ),
-                                  DataColumn(
-                                    label: Text(
-                                      "Phone Number",
-                                      style: TextStyle(fontFamily: bold),
-                                    ),
-                                  ),
-                                  DataColumn(
-                                    label: Text(
-                                      "Actions",
-                                      style: TextStyle(fontFamily: bold),
-                                    ),
-                                  ),
-                                ],
-                                rows: userData.isNotEmpty
-                                    ? userData.map((user) {
-                                        return DataRow(
-                                          cells: [
-                                            DataCell(
-                                                Text(user["name"] ?? "N/A")),
-                                            DataCell(
-                                                Text(user["mobile"] ?? "N/A")),
-                                            DataCell(
+                                              const SizedBox(height: 4),
+                                              Text(
+                                                  "Phone Number: ${user["mobile"] ?? "N/A"}"),
+                                              Text(
+                                                  "Status: ${user["status"] ?? "N/A"}"),
+                                              Text(
+                                                  "Email: ${user['eMail'] ?? "N/A"}"),
                                               Row(
                                                 mainAxisAlignment:
                                                     MainAxisAlignment.start,
@@ -748,8 +708,6 @@ class _UserRoleState extends State<UserRole> {
                                                       showUserDetails(user);
                                                     },
                                                   ),
-
-                                                  // Conditionally render the delete button
                                                   if (userRoleLevel == 7)
                                                     IconButton(
                                                       icon: const Icon(
@@ -762,46 +720,41 @@ class _UserRoleState extends State<UserRole> {
                                                         if (userCode != null &&
                                                             userCode
                                                                 .isNotEmpty) {
-                                                          print(
-                                                              'Attempting to delete role with UserCode: $userCode');
                                                           deleteUser(userCode);
                                                           fetchRoles();
-                                                        } else {
-                                                          print(
-                                                              'Invalid UserCode: $userCode');
                                                         }
                                                       },
                                                     ),
                                                 ],
                                               ),
-                                            ),
-                                          ],
-                                        );
-                                      }).toList()
-                                    : [
-                                        const DataRow(
-                                          cells: [
-                                            DataCell(Text("No users found")),
-                                            DataCell(Text("")),
-                                            DataCell(Text("")),
-                                          ],
-                                        )
-                                      ],
-                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      );
+                                    }).toList()
+                                  : [
+                                      const Card(
+                                        margin: EdgeInsets.all(16),
+                                        child: Padding(
+                                          padding: EdgeInsets.all(12),
+                                          child: Text("No users found"),
+                                        ),
+                                      )
+                                    ],
                             ),
-                          )
-                  ],
-                )
-                    .box
-                    .white
-                    .rounded
-                    .padding(const EdgeInsets.all(20)) // Adjusted padding
-                    .width(context.screenWidth -
-                        30) // Adjust the width dynamically
-                    .shadowSm
-                    .make(),
-              ],
-            ),
+                          ),
+                        )
+                ],
+              )
+                  .box
+                  .white
+                  .rounded
+                  .padding(const EdgeInsets.all(20)) // Adjusted padding
+                  .width(
+                      context.screenWidth - 30) // Adjust the width dynamically
+                  .shadowSm
+                  .make(),
+            ],
           ),
         ),
       ),

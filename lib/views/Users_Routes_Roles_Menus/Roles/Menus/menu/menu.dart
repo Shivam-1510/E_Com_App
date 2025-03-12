@@ -1,8 +1,9 @@
 import 'package:e_comapp/consts/consts.dart';
-import 'package:e_comapp/services/menuService.dart';
+import 'package:e_comapp/services/menuservice.dart';
 import 'package:e_comapp/utils/snackbar_util.dart';
 import 'package:e_comapp/views/widgets_common/applogo.dart';
 import 'package:e_comapp/views/widgets_common/bg_widgets.dart';
+import 'package:e_comapp/views/widgets_common/drawer.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class Menu extends StatefulWidget {
@@ -19,6 +20,7 @@ class _MenuState extends State<Menu> {
   bool isLoading = true;
   bool isActive = false;
   List<dynamic> _menus = []; //list to hold the menu data
+  List<dynamic> _filteredMenus = [];
   List<dynamic> menuItems = []; // list to store the muenuitems
   String? selectedMenu;
   IconData? selectedIcon; //Add this to variable to keep track of sselected icon
@@ -28,6 +30,9 @@ class _MenuState extends State<Menu> {
   void initState() {
     super.initState();
     fetchMenus(); // Fetch menus on widget load
+    searchController.addListener(() {
+      filterMenus(searchController.text);
+    });
   }
 
   // Fetch menus using the MenuService
@@ -36,6 +41,7 @@ class _MenuState extends State<Menu> {
     if (menus != null) {
       setState(() {
         _menus = menus;
+        _filteredMenus = _menus; // Initialize with full List
         menuItems = _menus.map((menu) {
           return {
             "menuCode": menu["menuCode"].toString(), // Always convert to String
@@ -49,14 +55,35 @@ class _MenuState extends State<Menu> {
       setState(() {
         isLoading = false;
       });
-      print("Failed to fetch menus");
     }
+  }
+
+  void filterMenus(String query) {
+    setState(() {
+      if (query.isEmpty) {
+        _filteredMenus = _menus;
+      } else {
+        _filteredMenus = _menus.where((menu) {
+          final menuName = menu["menuName"]?.toLowerCase() ?? "";
+          final path = menu["path"]?.toLowerCase() ?? "";
+          return menuName.contains(query.toLowerCase()) ||
+              path.contains(query.toLowerCase());
+        }).toList();
+      }
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     return bgWidget(
       Scaffold(
+        appBar: AppBar(
+            title: Text(
+              'Menu',
+              style: TextStyle(color: Colors.white),
+            ),
+            iconTheme: IconThemeData(color: Colors.white)),
+        drawer: CustomDrawer(),
         body: Center(
           child: SingleChildScrollView(
             scrollDirection: Axis.vertical,
@@ -65,14 +92,7 @@ class _MenuState extends State<Menu> {
               children: [
                 SizedBox(height: context.screenHeight * 0.02),
                 applogoWidget(),
-                10.heightBox,
-                "Menu"
-                    .text
-                    .fontFamily(bold)
-                    .color(Colors.white)
-                    .size(18)
-                    .make(),
-                15.heightBox,
+                20.heightBox,
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -246,14 +266,15 @@ class _MenuState extends State<Menu> {
                                                           setState(() {
                                                             selectedIcon =
                                                                 FontAwesomeIcons
-                                                                    .home;
+                                                                    .house;
                                                           });
                                                         },
                                                         child: Icon(
-                                                          FontAwesomeIcons.home,
+                                                          FontAwesomeIcons
+                                                              .house,
                                                           color: selectedIcon ==
                                                                   FontAwesomeIcons
-                                                                      .home
+                                                                      .house
                                                               ? Colors.green
                                                               : Colors.black,
                                                         ),
@@ -510,8 +531,7 @@ class _MenuState extends State<Menu> {
 
                                                     if (result != null) {
                                                       // Successfully created menu
-                                                      print(
-                                                          "Menu created successfully!");
+
                                                       fetchMenus(); // Refresh the menu list
                                                       Navigator.pop(
                                                           context); // Close dialog
@@ -545,473 +565,467 @@ class _MenuState extends State<Menu> {
                         },
                       ),
                     ),
-                    HeightBox(20),
-
-                    // Table
+                    // CARd
                     isLoading
                         ? CircularProgressIndicator()
-                        : Center(
-                            child: SingleChildScrollView(
-                              scrollDirection: Axis.horizontal,
-                              child: DataTable(
-                                columnSpacing: 30,
-                                columns: const [
-                                  DataColumn(
-                                    label: Text(
-                                      "Menu Name",
-                                      style: TextStyle(
-                                          fontFamily: bold, fontSize: 16),
+                        : SingleChildScrollView(
+                            child: Column(
+                              children: [
+                                // Heading
+                                Padding(
+                                  padding: const EdgeInsets.all(16.0),
+                                  child: Text(
+                                    'Menu Details',
+                                    style: TextStyle(
+                                      fontSize: 22,
+                                      fontWeight: FontWeight.bold,
                                     ),
                                   ),
-                                  DataColumn(
-                                    label: Text(
-                                      "Path",
+                                ),
+                                if (_filteredMenus.isEmpty)
+                                  Padding(
+                                    padding: const EdgeInsets.all(16.0),
+                                    child: Text(
+                                      'No menus found',
                                       style: TextStyle(
-                                          fontFamily: bold, fontSize: 16),
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.grey,
+                                      ),
                                     ),
-                                  ),
-                                  DataColumn(
-                                    label: Text(
-                                      "Parent Name",
-                                      style: TextStyle(
-                                          fontFamily: bold, fontSize: 16),
-                                    ),
-                                  ),
-                                  DataColumn(
-                                    label: Text(
-                                      "Actions",
-                                      style: TextStyle(
-                                          fontFamily: bold, fontSize: 16),
-                                    ),
-                                  ),
-                                ],
-                                rows: _menus.map((menu) {
-                                  // Find the parent menu by matching the parentCode
-                                  final parentMenu = _menus.firstWhere(
-                                    (m) => m["menuCode"] == menu["parentCode"],
-                                    orElse: () =>
-                                        null, // If not found, return null
-                                  );
+                                  )
+                                else
+                                  // Cards for each menu
+                                  ..._filteredMenus.map((menu) {
+                                    // Find the parent menu by matching the parentCode
+                                    final parentMenu = _menus.firstWhere(
+                                      (m) =>
+                                          m["menuCode"] == menu["parentCode"],
+                                      orElse: () => null,
+                                    );
 
-                                  return DataRow(cells: [
-                                    DataCell(Text(
-                                        menu["menuName"] ?? "")), // Menu Name
-                                    DataCell(Text(menu["path"] ?? "")), // Path
-                                    DataCell(Text(parentMenu != null
-                                        ? parentMenu["menuName"]
-                                        : "")), // Parent Name or empty
-                                    DataCell(Row(
-                                      children: [
-                                        IconButton(
-                                          icon: const Icon(Icons.edit,
-                                              color: Colors.blue),
-                                          onPressed: () {
-                                            // Get current values for the selected menu
-                                            final currentMenuId = menu['id'] ??
-                                                0; // Assuming 'id' exists in menu
-                                            final currentMenuName =
-                                                menu['menuName']?.toString() ??
-                                                    '';
-                                            final currentPath =
-                                                menu['path']?.toString() ?? '';
-                                            final currentIcon =
-                                                menu['icon']?.toString() ?? '';
-                                            final currentStatus =
-                                                menu['status'] == true;
+                                    return Card(
+                                      elevation: 5,
+                                      margin: EdgeInsets.symmetric(
+                                          vertical: 8, horizontal: 16),
+                                      child: Padding(
+                                        padding: EdgeInsets.all(16.0),
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              'Menu Name: ${menu["menuName"] ?? ""}',
+                                              style: TextStyle(
+                                                fontSize: 18,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                            SizedBox(height: 8),
+                                            Text('Path: ${menu["path"] ?? ""}'),
+                                            SizedBox(height: 8),
+                                            Text(
+                                                'Parent Name: ${parentMenu != null ? parentMenu["menuName"] : "N/A"}'),
+                                            // Action buttons - aligned at the right and center
+                                            Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.end,
+                                              children: [
+                                                IconButton(
+                                                  icon: const Icon(Icons.edit,
+                                                      color: Colors.blue),
+                                                  onPressed: () {
+                                                    // Get current values for the selected menu
+                                                    final currentMenuName =
+                                                        menu['menuName']
+                                                                ?.toString() ??
+                                                            '';
+                                                    final currentPath =
+                                                        menu['path']
+                                                                ?.toString() ??
+                                                            '';
+                                                    final currentIcon =
+                                                        menu['icon']
+                                                                ?.toString() ??
+                                                            '';
+                                                    final currentStatus =
+                                                        menu['status'] == true;
+                                                    final currentParentCode =
+                                                        menu['parentCode']
+                                                            ?.toString();
 
-                                            // Variables for updated values
-                                            String updatedMenuName =
-                                                currentMenuName;
-                                            String updatedPath = currentPath;
-                                            String updatedIcon = currentIcon;
-                                            bool updatedStatus = currentStatus;
+                                                    // Variables for updated values
+                                                    String updatedMenuName =
+                                                        currentMenuName;
+                                                    String updatedPath =
+                                                        currentPath;
+                                                    String updatedIcon =
+                                                        currentIcon;
+                                                    bool updatedStatus =
+                                                        currentStatus;
+                                                    String? updatedParentCode =
+                                                        currentParentCode;
 
-                                            showDialog(
-                                              context: context,
-                                              builder: (context) {
-                                                return StatefulBuilder(
-                                                  builder: (context, setState) {
-                                                    return AlertDialog(
-                                                      title: Text('Edit Menu'),
-                                                      content:
-                                                          SingleChildScrollView(
-                                                        child: Column(
-                                                          mainAxisSize:
-                                                              MainAxisSize.min,
-                                                          children: [
-                                                            // Menu Name Input
-                                                            TextField(
-                                                              controller:
-                                                                  TextEditingController(
-                                                                      text:
-                                                                          updatedMenuName),
-                                                              onChanged:
-                                                                  (value) {
-                                                                updatedMenuName =
-                                                                    value;
-                                                              },
-                                                              decoration:
-                                                                  InputDecoration(
-                                                                labelText:
-                                                                    'Menu Name',
-                                                                border:
-                                                                    OutlineInputBorder(),
+                                                    showDialog(
+                                                      context: context,
+                                                      builder: (context) {
+                                                        return StatefulBuilder(
+                                                          builder: (context,
+                                                              setState) {
+                                                            return AlertDialog(
+                                                              title: Text(
+                                                                  'Edit Menu'),
+                                                              content:
+                                                                  SingleChildScrollView(
+                                                                child: Column(
+                                                                  mainAxisSize:
+                                                                      MainAxisSize
+                                                                          .min,
+                                                                  children: [
+                                                                    // Menu Name Input
+                                                                    TextField(
+                                                                      controller:
+                                                                          TextEditingController(
+                                                                              text: updatedMenuName),
+                                                                      onChanged:
+                                                                          (value) {
+                                                                        updatedMenuName =
+                                                                            value;
+                                                                      },
+                                                                      decoration:
+                                                                          InputDecoration(
+                                                                        labelText:
+                                                                            'Menu Name',
+                                                                        border:
+                                                                            OutlineInputBorder(),
+                                                                      ),
+                                                                    ),
+                                                                    SizedBox(
+                                                                        height:
+                                                                            16),
+                                                                    // Path Input
+                                                                    TextField(
+                                                                      controller:
+                                                                          TextEditingController(
+                                                                              text: updatedPath),
+                                                                      onChanged:
+                                                                          (value) {
+                                                                        updatedPath =
+                                                                            value;
+                                                                      },
+                                                                      decoration:
+                                                                          InputDecoration(
+                                                                        labelText:
+                                                                            'Path',
+                                                                        border:
+                                                                            OutlineInputBorder(),
+                                                                      ),
+                                                                    ),
+                                                                    SizedBox(
+                                                                        height:
+                                                                            16),
+                                                                    // Parent Name Dropdown
+                                                                    DropdownButtonFormField<
+                                                                        String>(
+                                                                      decoration:
+                                                                          const InputDecoration(
+                                                                        labelText:
+                                                                            "Parent Name",
+                                                                        border:
+                                                                            OutlineInputBorder(),
+                                                                      ),
+                                                                      value:
+                                                                          updatedParentCode, // Current selection
+                                                                      items: _menus
+                                                                          .map(
+                                                                              (menu) {
+                                                                        return DropdownMenuItem<
+                                                                            String>(
+                                                                          value:
+                                                                              menu["menuCode"], // Use menuCode as the value
+                                                                          child:
+                                                                              Text(menu["menuName"] ?? "No Parent"), // Display menuName
+                                                                        );
+                                                                      }).toList(),
+                                                                      onChanged:
+                                                                          (newValue) {
+                                                                        setState(
+                                                                            () {
+                                                                          updatedParentCode =
+                                                                              newValue; // Update selected parentCode
+                                                                        });
+                                                                      },
+                                                                    ),
+                                                                    SizedBox(
+                                                                        height:
+                                                                            16),
+                                                                    Column(
+                                                                      crossAxisAlignment:
+                                                                          CrossAxisAlignment
+                                                                              .start,
+                                                                      children: [
+                                                                        Text(
+                                                                          'Icons',
+                                                                          style: TextStyle(
+                                                                              fontSize: 20,
+                                                                              fontWeight: FontWeight.bold),
+                                                                        ),
+                                                                        SizedBox(
+                                                                            height:
+                                                                                10),
+                                                                        Container(
+                                                                          padding:
+                                                                              EdgeInsets.all(16),
+                                                                          decoration:
+                                                                              BoxDecoration(
+                                                                            color:
+                                                                                Colors.white,
+                                                                            borderRadius:
+                                                                                BorderRadius.circular(10),
+                                                                            boxShadow: [
+                                                                              BoxShadow(
+                                                                                color: Colors.black12,
+                                                                                blurRadius: 5,
+                                                                                spreadRadius: 2,
+                                                                              ),
+                                                                            ],
+                                                                          ),
+                                                                          child:
+                                                                              Wrap(
+                                                                            spacing:
+                                                                                20,
+                                                                            runSpacing:
+                                                                                20,
+                                                                            children: [
+                                                                              // Icon options
+                                                                              GestureDetector(
+                                                                                onTap: () {
+                                                                                  setState(() {
+                                                                                    updatedIcon = 'heart';
+                                                                                  });
+                                                                                },
+                                                                                child: Icon(
+                                                                                  FontAwesomeIcons.heart,
+                                                                                  color: updatedIcon == 'heart' ? Colors.green : Colors.black,
+                                                                                ),
+                                                                              ),
+                                                                              GestureDetector(
+                                                                                onTap: () {
+                                                                                  setState(() {
+                                                                                    updatedIcon = 'home';
+                                                                                  });
+                                                                                },
+                                                                                child: Icon(
+                                                                                  FontAwesomeIcons.house,
+                                                                                  color: updatedIcon == 'home' ? Colors.green : Colors.black,
+                                                                                ),
+                                                                              ),
+                                                                              GestureDetector(
+                                                                                onTap: () {
+                                                                                  setState(() {
+                                                                                    updatedIcon = 'sitemap';
+                                                                                  });
+                                                                                },
+                                                                                child: Icon(
+                                                                                  FontAwesomeIcons.sitemap,
+                                                                                  color: updatedIcon == 'sitemap' ? Colors.green : Colors.black,
+                                                                                ),
+                                                                              ),
+                                                                              GestureDetector(
+                                                                                onTap: () {
+                                                                                  setState(() {
+                                                                                    updatedIcon = 'adjust';
+                                                                                  });
+                                                                                },
+                                                                                child: Icon(
+                                                                                  FontAwesomeIcons.adjust,
+                                                                                  color: updatedIcon == 'adjust' ? Colors.green : Colors.black,
+                                                                                ),
+                                                                              ),
+
+                                                                              GestureDetector(
+                                                                                onTap: () {
+                                                                                  setState(() {
+                                                                                    updatedIcon = 'brush';
+                                                                                  });
+                                                                                },
+                                                                                child: Icon(
+                                                                                  FontAwesomeIcons.brush,
+                                                                                  color: updatedIcon == 'brush' ? Colors.green : Colors.black,
+                                                                                ),
+                                                                              ),
+                                                                              GestureDetector(
+                                                                                onTap: () {
+                                                                                  setState(() {
+                                                                                    updatedIcon = 'users';
+                                                                                  });
+                                                                                },
+                                                                                child: Icon(
+                                                                                  FontAwesomeIcons.users,
+                                                                                  color: updatedIcon == 'users' ? Colors.green : Colors.black,
+                                                                                ),
+                                                                              ),
+                                                                              GestureDetector(
+                                                                                onTap: () {
+                                                                                  setState(() {
+                                                                                    updatedIcon = 'phone';
+                                                                                  });
+                                                                                },
+                                                                                child: Icon(
+                                                                                  FontAwesomeIcons.phone,
+                                                                                  color: updatedIcon == 'phone' ? Colors.green : Colors.black,
+                                                                                ),
+                                                                              ),
+                                                                              GestureDetector(
+                                                                                onTap: () {
+                                                                                  setState(() {
+                                                                                    updatedIcon = 'fileAlt';
+                                                                                  });
+                                                                                },
+                                                                                child: Icon(
+                                                                                  FontAwesomeIcons.fileAlt,
+                                                                                  color: updatedIcon == 'fileAlt' ? Colors.green : Colors.black,
+                                                                                ),
+                                                                              ),
+                                                                              // Add more icons as needed...
+                                                                            ],
+                                                                          ),
+                                                                        ),
+                                                                      ],
+                                                                    ),
+                                                                    SizedBox(
+                                                                        height:
+                                                                            16),
+                                                                    // Status Toggle
+                                                                    Row(
+                                                                      mainAxisAlignment:
+                                                                          MainAxisAlignment
+                                                                              .spaceBetween,
+                                                                      children: [
+                                                                        Text(
+                                                                          'Status:',
+                                                                          style: TextStyle(
+                                                                              fontSize: 18,
+                                                                              fontWeight: FontWeight.bold),
+                                                                        ),
+                                                                        Switch(
+                                                                          value:
+                                                                              updatedStatus,
+                                                                          onChanged:
+                                                                              (value) {
+                                                                            setState(() {
+                                                                              updatedStatus = value;
+                                                                            });
+                                                                          },
+                                                                          activeColor:
+                                                                              Colors.green,
+                                                                          inactiveThumbColor:
+                                                                              Colors.grey,
+                                                                        ),
+                                                                      ],
+                                                                    ),
+                                                                    Text(
+                                                                      updatedStatus
+                                                                          ? 'Active'
+                                                                          : 'Inactive',
+                                                                      style: TextStyle(
+                                                                          fontSize:
+                                                                              16,
+                                                                          fontWeight: FontWeight
+                                                                              .bold,
+                                                                          color: updatedStatus
+                                                                              ? Colors.green
+                                                                              : Colors.red),
+                                                                    ),
+                                                                  ],
+                                                                ),
                                                               ),
-                                                            ),
-                                                            SizedBox(
-                                                                height: 16),
-                                                            // Path Input
-                                                            TextField(
-                                                              controller:
-                                                                  TextEditingController(
-                                                                      text:
-                                                                          updatedPath),
-                                                              onChanged:
-                                                                  (value) {
-                                                                updatedPath =
-                                                                    value;
-                                                              },
-                                                              decoration:
-                                                                  InputDecoration(
-                                                                labelText:
-                                                                    'Path',
-                                                                border:
-                                                                    OutlineInputBorder(),
-                                                              ),
-                                                            ),
-                                                            SizedBox(
-                                                                height: 16),
-                                                            // Icon Selection
-                                                            Column(
-                                                              crossAxisAlignment:
-                                                                  CrossAxisAlignment
-                                                                      .start,
-                                                              children: [
-                                                                Text(
-                                                                  'Icons',
-                                                                  style: TextStyle(
-                                                                      fontSize:
-                                                                          20,
-                                                                      fontWeight:
-                                                                          FontWeight
-                                                                              .bold),
+                                                              actions: [
+                                                                TextButton(
+                                                                  onPressed: () =>
+                                                                      Navigator.of(
+                                                                              context)
+                                                                          .pop(),
+                                                                  child: Text(
+                                                                      'Cancel'),
                                                                 ),
-                                                                SizedBox(
-                                                                    height: 10),
-                                                                Container(
-                                                                  padding:
-                                                                      EdgeInsets
-                                                                          .all(
-                                                                              16),
-                                                                  decoration:
-                                                                      BoxDecoration(
-                                                                    color: Colors
-                                                                        .white,
-                                                                    borderRadius:
-                                                                        BorderRadius.circular(
-                                                                            10),
-                                                                    boxShadow: [
-                                                                      BoxShadow(
-                                                                        color: Colors
-                                                                            .black12,
-                                                                        blurRadius:
-                                                                            5,
-                                                                        spreadRadius:
-                                                                            2,
-                                                                      ),
-                                                                    ],
+                                                                ElevatedButton(
+                                                                  style: ElevatedButton
+                                                                      .styleFrom(
+                                                                    backgroundColor:
+                                                                        Colors
+                                                                            .red,
                                                                   ),
-                                                                  child: Wrap(
-                                                                    spacing: 20,
-                                                                    runSpacing:
-                                                                        20,
-                                                                    children: [
-                                                                      // Icon options
-                                                                      GestureDetector(
-                                                                        onTap:
-                                                                            () {
-                                                                          setState(
-                                                                              () {
-                                                                            updatedIcon =
-                                                                                'heart';
-                                                                          });
-                                                                        },
-                                                                        child:
-                                                                            Icon(
-                                                                          FontAwesomeIcons
-                                                                              .heart,
-                                                                          color: updatedIcon == 'heart'
-                                                                              ? Colors.green
-                                                                              : Colors.black,
-                                                                        ),
-                                                                      ),
-                                                                      GestureDetector(
-                                                                        onTap:
-                                                                            () {
-                                                                          setState(
-                                                                              () {
-                                                                            updatedIcon =
-                                                                                'home';
-                                                                          });
-                                                                        },
-                                                                        child:
-                                                                            Icon(
-                                                                          FontAwesomeIcons
-                                                                              .home,
-                                                                          color: updatedIcon == 'home'
-                                                                              ? Colors.green
-                                                                              : Colors.black,
-                                                                        ),
-                                                                      ),
-                                                                      GestureDetector(
-                                                                        onTap:
-                                                                            () {
-                                                                          setState(
-                                                                              () {
-                                                                            updatedIcon =
-                                                                                'sitemap';
-                                                                          });
-                                                                        },
-                                                                        child:
-                                                                            Icon(
-                                                                          FontAwesomeIcons
-                                                                              .sitemap,
-                                                                          color: updatedIcon == 'sitemap'
-                                                                              ? Colors.green
-                                                                              : Colors.black,
-                                                                        ),
-                                                                      ),
-                                                                      GestureDetector(
-                                                                        onTap:
-                                                                            () {
-                                                                          setState(
-                                                                              () {
-                                                                            updatedIcon =
-                                                                                'adjust';
-                                                                          });
-                                                                        },
-                                                                        child:
-                                                                            Icon(
-                                                                          FontAwesomeIcons
-                                                                              .adjust,
-                                                                          color: updatedIcon == 'adjust'
-                                                                              ? Colors.green
-                                                                              : Colors.black,
-                                                                        ),
-                                                                      ),
+                                                                  onPressed:
+                                                                      () async {
+                                                                    // Validate inputs
+                                                                    if (updatedMenuName
+                                                                            .isEmpty ||
+                                                                        updatedPath
+                                                                            .isEmpty) {
+                                                                      showGlobalSnackBar(
+                                                                          'Please fill all fields.');
+                                                                      return;
+                                                                    }
 
-                                                                      GestureDetector(
-                                                                        onTap:
-                                                                            () {
-                                                                          setState(
-                                                                              () {
-                                                                            updatedIcon =
-                                                                                'brush';
-                                                                          });
-                                                                        },
-                                                                        child:
-                                                                            Icon(
-                                                                          FontAwesomeIcons
-                                                                              .brush,
-                                                                          color: updatedIcon == 'brush'
-                                                                              ? Colors.green
-                                                                              : Colors.black,
-                                                                        ),
-                                                                      ),
-                                                                      GestureDetector(
-                                                                        onTap:
-                                                                            () {
-                                                                          setState(
-                                                                              () {
-                                                                            updatedIcon =
-                                                                                'users';
-                                                                          });
-                                                                        },
-                                                                        child:
-                                                                            Icon(
-                                                                          FontAwesomeIcons
-                                                                              .users,
-                                                                          color: updatedIcon == 'users'
-                                                                              ? Colors.green
-                                                                              : Colors.black,
-                                                                        ),
-                                                                      ),
-                                                                      GestureDetector(
-                                                                        onTap:
-                                                                            () {
-                                                                          setState(
-                                                                              () {
-                                                                            updatedIcon =
-                                                                                'phone';
-                                                                          });
-                                                                        },
-                                                                        child:
-                                                                            Icon(
-                                                                          FontAwesomeIcons
-                                                                              .phone,
-                                                                          color: updatedIcon == 'phone'
-                                                                              ? Colors.green
-                                                                              : Colors.black,
-                                                                        ),
-                                                                      ),
-                                                                      GestureDetector(
-                                                                        onTap:
-                                                                            () {
-                                                                          setState(
-                                                                              () {
-                                                                            updatedIcon =
-                                                                                'fileAlt';
-                                                                          });
-                                                                        },
-                                                                        child:
-                                                                            Icon(
-                                                                          FontAwesomeIcons
-                                                                              .fileAlt,
-                                                                          color: updatedIcon == 'fileAlt'
-                                                                              ? Colors.green
-                                                                              : Colors.black,
-                                                                        ),
-                                                                      ),
-                                                                      // Add more icons as needed...
-                                                                    ],
-                                                                  ),
-                                                                ),
-                                                              ],
-                                                            ),
-                                                            SizedBox(
-                                                                height: 16),
-                                                            // Status Toggle
-                                                            Row(
-                                                              mainAxisAlignment:
-                                                                  MainAxisAlignment
-                                                                      .spaceBetween,
-                                                              children: [
-                                                                Text(
-                                                                  'Status:',
-                                                                  style: TextStyle(
-                                                                      fontSize:
-                                                                          18,
-                                                                      fontWeight:
-                                                                          FontWeight
-                                                                              .bold),
-                                                                ),
-                                                                Switch(
-                                                                  value:
+                                                                    // Call the updateMenu function with updated values
+                                                                    await _menuService
+                                                                        .updateMenu(
+                                                                      menu['menuCode']
+                                                                              ?.toString() ??
+                                                                          '', // menuCode
+                                                                      updatedMenuName,
+                                                                      updatedPath,
+                                                                      updatedIcon,
                                                                       updatedStatus,
-                                                                  onChanged:
-                                                                      (value) {
-                                                                    setState(
-                                                                        () {
-                                                                      updatedStatus =
-                                                                          value;
-                                                                    });
+                                                                      updatedParentCode ??
+                                                                          '', // parentCode (fallback if null)
+                                                                    );
+
+                                                                    fetchMenus();
+                                                                    Navigator.of(
+                                                                            context)
+                                                                        .pop();
                                                                   },
-                                                                  activeColor:
-                                                                      Colors
-                                                                          .green,
-                                                                  inactiveThumbColor:
-                                                                      Colors
-                                                                          .grey,
+                                                                  child: Text(
+                                                                    'Update',
+                                                                    style: TextStyle(
+                                                                        color: Colors
+                                                                            .white),
+                                                                  ),
                                                                 ),
                                                               ],
-                                                            ),
-                                                            Text(
-                                                              updatedStatus
-                                                                  ? 'Active'
-                                                                  : 'Inactive',
-                                                              style: TextStyle(
-                                                                  fontSize: 16,
-                                                                  fontWeight:
-                                                                      FontWeight
-                                                                          .bold,
-                                                                  color: updatedStatus
-                                                                      ? Colors
-                                                                          .green
-                                                                      : Colors
-                                                                          .red),
-                                                            ),
-                                                          ],
-                                                        ),
-                                                      ),
-                                                      actions: [
-                                                        TextButton(
-                                                          onPressed: () =>
-                                                              Navigator.of(
-                                                                      context)
-                                                                  .pop(),
-                                                          child: Text('Cancel'),
-                                                        ),
-                                                        ElevatedButton(
-                                                          style: ElevatedButton
-                                                              .styleFrom(
-                                                            backgroundColor:
-                                                                Colors.red,
-                                                          ),
-                                                          onPressed: () async {
-                                                            // Validate inputs
-                                                            if (updatedMenuName
-                                                                    .isEmpty ||
-                                                                updatedPath
-                                                                    .isEmpty) {
-                                                              showGlobalSnackBar(
-                                                                  'Please fill all fields.');
-                                                              return;
-                                                            }
-
-                                                            // Call the updateMenu function with updated values
-                                                           await _menuService
-                                                                .updateMenu(
-                                                              currentMenuId,
-                                                              menu['menuCode']
-                                                                      ?.toString() ??
-                                                                  '', // Assuming menuCode exists
-                                                              updatedMenuName,
-                                                              updatedPath,
-                                                              updatedIcon,
-                                                              updatedStatus,
                                                             );
-                                                            fetchMenus();
-                                                            Navigator.of(
-                                                                    context)
-                                                                .pop();
                                                           },
-                                                          child: Text(
-                                                            'Update',
-                                                            style: TextStyle(
-                                                                color: Colors
-                                                                    .white),
-                                                          ),
-                                                        ),
-                                                      ],
+                                                        );
+                                                      },
                                                     );
                                                   },
-                                                );
-                                              },
-                                            );
-                                          },
+                                                ),
+
+                                                // Delete button
+                                                IconButton(
+                                                  icon: Icon(Icons.delete,
+                                                      color: Colors.red),
+                                                  onPressed: () async {
+                                                    final menuCode =
+                                                        menu["menuCode"];
+                                                    if (menuCode != null &&
+                                                        menuCode.isNotEmpty) {
+                                                      await _menuService
+                                                          .deleteMenu(menuCode);
+                                                      fetchMenus(); // Fetch menus again after deletion
+                                                    } else {}
+                                                  },
+                                                ),
+                                              ],
+                                            ),
+                                          ],
                                         ),
-                                        IconButton(
-                                          icon: Icon(Icons.delete,
-                                              color: Colors.red),
-                                          onPressed: () async {
-                                            final menuCode = menu[
-                                                "menuCode"]; // Retrieve the menuCode from the menu object
-                                            if (menuCode != null &&
-                                                menuCode.isNotEmpty) {
-                                              await _menuService
-                                                  .deleteMenu(menuCode);
-                                              fetchMenus(); // Call the deleteMenu function
-                                            } else {
-                                              print(
-                                                  "Menu code is null or empty.");
-                                            }
-                                          },
-                                        ),
-                                      ],
-                                    )),
-                                  ]);
-                                }).toList(),
-                              ),
+                                      ),
+                                    );
+                                  }).toList(),
+                              ],
                             ),
                           ),
                   ],

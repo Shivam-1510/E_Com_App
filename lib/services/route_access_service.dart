@@ -4,7 +4,7 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 class RouteAccessService {
-  final String baseUrl = "https://localhost:7157";
+  final String baseUrl = "https://localhost:5001";
 
   // function to get the stored token
   Future<String?> getToken() async {
@@ -13,18 +13,15 @@ class RouteAccessService {
     return token;
   }
 
-
   Future<List<Map<String, dynamic>>> fetchRouteByRoleCode(
       String roleCode) async {
     if (roleCode.isEmpty) {
-      print('Invalid roleCode provided: $roleCode');
       return [];
     }
 
     final encodedRoleCode = base64Encode(utf8.encode(roleCode));
     final token = await getToken();
     if (token == null) {
-      print('No token found. Please login.');
       return [];
     }
 
@@ -62,22 +59,18 @@ class RouteAccessService {
 
         return extractRoutes(accessList);
       } else {
-        print('Failed to fetch route access. Status: ${response.statusCode}');
         return [];
       }
     } catch (e) {
-      print(' Error fetching route access: $e');
       return [];
     }
   }
-
 
   // Create Route access dene keliye
   Future<Map<String, dynamic>?> createRouteAccess(
       List<Map<String, dynamic>> routeAccessList) async {
     final token = await getToken();
     if (token == null) {
-      print('No token found. Please log in.');
       return null;
     }
     final url = Uri.parse('$baseUrl/routeaccess/createandupdate');
@@ -94,12 +87,9 @@ class RouteAccessService {
         showGlobalSnackBar('Route Access Updated!');
         return jsonDecode(response.body);
       } else {
-        print(
-            "Failed to update route access. Status code: ${response.statusCode}");
         return null;
       }
     } catch (e) {
-      print("Error updating route access: $e");
       return null;
     }
   }

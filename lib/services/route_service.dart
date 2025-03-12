@@ -5,7 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 
 class RouteService {
-  final String baseUrl = "https://localhost:7157";
+  final String baseUrl = "https://localhost:5001";
   bool isloading = true;
 
   //Funciton get the stored token
@@ -30,12 +30,8 @@ class RouteService {
       if (response.statusCode == 200) {
         final List<dynamic> routeData = jsonDecode(response.body);
         return routeData;
-      } else {
-        print('Failed to fetch routes: ${response.statusCode}');
-      }
-    } catch (e) {
-      print('Error fetching routes: $e');
-    }
+      } else {}
+    } catch (e) {}
   }
 
   //Funtion to create routes
@@ -43,7 +39,6 @@ class RouteService {
       String routeName, String path, bool isActive, String? parentCode) async {
     final token = await getToken();
     if (token == null) {
-      print('No token found. Please log in.');
       return null;
     }
     final url = Uri.parse('$baseUrl/route/create');
@@ -62,15 +57,13 @@ class RouteService {
         }),
       );
       if (response.statusCode == 200) {
-        showGlobalSnackBar('Route Created Succesfully!');
+        showGlobalSnackBar('Route Created Successfully!');
         final Map<String, dynamic> routesData = jsonDecode(response.body);
         return routesData;
       } else {
-        print('Failed to create route. Status Code ${response.statusCode}');
         return null;
       }
     } catch (e) {
-      print('Error creating route:$e');
       return null;
     }
   }
@@ -78,13 +71,11 @@ class RouteService {
   // Delete Function
   Future<void> deleteRotue(String routeCode) async {
     if (routeCode.isEmpty) {
-      print('Invalid menuCode provided: $routeCode');
       return;
     }
     final encodedRouteCode = base64Encode(utf8.encode(routeCode));
     final token = await getToken();
     if (token == null) {
-      print('No token found. Please login.');
       return;
     }
     final url =
@@ -100,19 +91,16 @@ class RouteService {
       if (response.statusCode == 200) {
         showGlobalSnackBar('Route Deleted Successfully!');
       } else {
-        showGlobalSnackBar('Failed to delete Menu.');
+        showGlobalSnackBar('Failed to delete Route.');
       }
-    } catch (e) {
-      print('Error deleting route: $e');
-    }
+    } catch (e) {}
   }
 
   // Update the routes
   Future<Map<String, dynamic>?> updateRoute(int id, String routeCode,
-      String routeName, String path, bool isActive) async {
+      String routeName, String path, bool isActive, String parentCode) async {
     final token = await getToken();
     if (token == null) {
-      print('No token found. Please log in.');
       return null;
     }
     final url = Uri.parse('$baseUrl/route/update');
@@ -129,6 +117,7 @@ class RouteService {
           'routeName': routeName,
           'path': path,
           'status': isActive,
+          'parentCode': parentCode,
         }),
       );
       if (response.statusCode == 200) {
@@ -136,11 +125,9 @@ class RouteService {
         showGlobalSnackBar('Route updated Successfully! ');
         return routeData;
       } else {
-        print('Falied to update menu. Status code: ${response.statusCode}');
         return null;
       }
     } catch (e) {
-      print('Error updating route: $e');
       return null;
     }
   }
@@ -160,11 +147,7 @@ class RouteService {
       if (response.statusCode == 200) {
         final List<dynamic> routeData = jsonDecode(response.body);
         return routeData;
-      } else {
-        print('Failed to fetch routes: ${response.statusCode}');
-      }
-    } catch (e) {
-      print('Error fetching routes: $e');
-    }
+      } else {}
+    } catch (e) {}
   }
 }

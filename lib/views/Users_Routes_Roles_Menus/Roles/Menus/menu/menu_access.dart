@@ -1,11 +1,12 @@
 import 'package:e_comapp/consts/consts.dart';
 import 'package:e_comapp/services/fetch_roles_for_menu.dart';
-import 'package:e_comapp/services/menuService.dart';
+import 'package:e_comapp/services/menuservice.dart';
 import 'package:e_comapp/services/menu_access_service.dart';
 import 'package:e_comapp/utils/snackbar_util.dart';
 
 import 'package:e_comapp/views/widgets_common/applogo.dart';
 import 'package:e_comapp/views/widgets_common/bg_widgets.dart';
+import 'package:e_comapp/views/widgets_common/drawer.dart';
 
 class MenuAccess extends StatefulWidget {
   const MenuAccess({super.key});
@@ -15,7 +16,7 @@ class MenuAccess extends StatefulWidget {
 }
 
 class _MenuAccessState extends State<MenuAccess> {
-  final String baseUrl = "https://localhost:7157";
+  final String baseUrl = "https://localhost:5001";
   final UserService _userService = UserService();
   final MenuService _menuService = MenuService();
   final MenuAccessService _menuAccessService = MenuAccessService();
@@ -138,11 +139,8 @@ class _MenuAccessState extends State<MenuAccess> {
 
       if (response != null) {
         showGlobalSnackBar("Menu access updated successfully!");
-      } else {
-        print("Failed to update menu access.");
-      }
+      } else {}
     } catch (e) {
-      print("Error updating menu access: $e");
     } finally {
       setState(() => isLoading = false);
     }
@@ -187,7 +185,6 @@ class _MenuAccessState extends State<MenuAccess> {
 
       setState(() {});
     } catch (e) {
-      print("Error fetching menu access: $e");
     } finally {
       setState(() => isLoading = false);
     }
@@ -243,6 +240,13 @@ class _MenuAccessState extends State<MenuAccess> {
   Widget build(BuildContext context) {
     return bgWidget(
       Scaffold(
+        appBar: AppBar(
+            title: Text(
+              'Menu Access',
+              style: TextStyle(color: Colors.white),
+            ),
+            iconTheme: IconThemeData(color: Colors.white)),
+        drawer: CustomDrawer(),
         body: Center(
           child: SingleChildScrollView(
             scrollDirection: Axis.vertical,
@@ -251,14 +255,7 @@ class _MenuAccessState extends State<MenuAccess> {
               children: [
                 SizedBox(height: context.screenHeight * 0.02),
                 applogoWidget(),
-                10.heightBox,
-                "Menu Access With Role"
-                    .text
-                    .fontFamily(bold)
-                    .color(Colors.white)
-                    .size(18)
-                    .make(),
-                15.heightBox,
+                20.heightBox,
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [

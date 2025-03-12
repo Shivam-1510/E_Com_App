@@ -1,87 +1,152 @@
-import 'package:e_comapp/consts/colors.dart';
+import 'dart:convert';
+import 'dart:typed_data';
 import 'package:e_comapp/consts/consts.dart';
 import 'package:e_comapp/consts/list.dart';
-import 'package:e_comapp/consts/styles.dart';
-import 'package:e_comapp/controller/home_controller.dart';
-import 'package:e_comapp/views/cart_screen/cartscreen.dart';
-import 'package:e_comapp/views/category_screen/categoryscreen.dart';
-import 'package:e_comapp/views/homeScreen/homescreen.dart';
-import 'package:e_comapp/views/profile_screen/profilescreen.dart';
+import 'package:e_comapp/services/Manage%20Products/stockservice.dart';
+import 'package:e_comapp/services/Order/cartservice.dart';
+import 'package:e_comapp/services/getloginuesrrole.dart';
+import 'package:e_comapp/utils/snackbar_util.dart';
 import 'package:e_comapp/views/widgets_common/our_button.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 
-class CategoryItemDetails extends StatelessWidget {
-  const CategoryItemDetails({super.key});
-
+class ItemsDetails extends StatefulWidget {
+  final Map<String, dynamic> product;
+  const ItemsDetails({Key? key, required this.product}) : super(key: key);
   @override
-  Widget build(BuildContext context) {
-    var controller = Get.put(HomeController());
-
-    var navbarItem = [
-      BottomNavigationBarItem(
-          icon: Image.asset(icHome, width: 26), label: home),
-      BottomNavigationBarItem(
-          icon: Image.asset(icCategories, width: 26), label: categories),
-      BottomNavigationBarItem(
-          icon: Image.asset(icCart, width: 26), label: cart),
-      BottomNavigationBarItem(
-          icon: Image.asset(icProfile, width: 26), label: account),
-    ];
-
-    var navBody = [
-      Homescreen(),
-      CategoryScreen(),
-      Cartscreen(),
-      ProfileScreen()
-    ];
-
-    return Scaffold(
-      body: Column(
-        children: [
-          Obx(() => Expanded(
-                child: navBody.elementAt(controller.currentNavIndex.value),
-              )),
-        ],
-      ),
-      bottomNavigationBar: Obx(
-        () => BottomNavigationBar(
-          currentIndex: controller.currentNavIndex.value,
-          selectedItemColor: redColor,
-          selectedLabelStyle: const TextStyle(fontFamily: semibold),
-          type: BottomNavigationBarType.fixed,
-          backgroundColor: whiteColor,
-          items: navbarItem,
-          onTap: (value) {
-            controller.currentNavIndex.value = value;
-          },
-        ),
-      ),
-    );
-  }
+  _ItemsDetailsState createState() => _ItemsDetailsState();
 }
 
-class ItemsDetails extends StatelessWidget {
-  final String? title;
-  const ItemsDetails({Key? key, required this.title}) : super(key: key);
+class _ItemsDetailsState extends State<ItemsDetails> {
+  Uint8List? mainImage;
+  Uint8List? subImage1;
+  Uint8List? subImage2;
+  List<Map<String, dynamic>> stockData = [];
+  final StockService _stockService = StockService();
+  final CartService _cartService = CartService();
+  final UserRoleService _userRoleService = UserRoleService();
+  dynamic userCode;
+  int? userRoleLevel;
+  List<dynamic> cartItems = [];
+
+  // Track selected color and size
+  String? selectedColor;
+  String? selectedSize;
+
+  // Function to fetch and set stock data
+  Future<void> getStock(String productCode) async {
+    var data = await _stockService.fetchStock(productCode);
+    if (data != null && data is List) {
+      setState(() {
+        stockData = List<Map<String, dynamic>>.from(data);
+      });
+    }
+  }
+
+  Future<void> fetchLoggedInUserDetails() async {
+    final userDetails =
+        await _userRoleService.getUserDetails(); // Fetch user data
+    if (userDetails != null) {
+      setState(() {
+        // Extract userCode from 'user' object
+        userCode = userDetails['user']['userCode']?.toString() ?? 'N/A';
+        // Extract roleLevel from 'userRoles' array
+        if (userDetails['userRoles'] != null &&
+            userDetails['userRoles'].isNotEmpty) {
+          userRoleLevel = userDetails['userRoles'][0]['roleLevel'] ?? 0;
+        } else {
+          userRoleLevel = 0; // Default value if roleLevel is missing
+        }
+      });
+    } else {}
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _decodeImages();
+    getStock(widget.product['productCode']);
+    fetchLoggedInUserDetails();
+  }
+
+  void _decodeImages() {
+    try {
+      setState(() {
+        mainImage = base64Decode(widget.product['firstImage']);
+        subImage1 = base64Decode(widget.product['secondImage']);
+        subImage2 = base64Decode(widget.product['thirdImage']);
+      });
+    } catch (e) {
+      print("Error decoding Base64: $e");
+    }
+  }
+
+  // Helper function to convert color name to Color object
+  Color _getColorFromName(String colorName) {
+    // Map color names to Color values
+    switch (colorName.toLowerCase()) {
+      case 'red':
+        return Colors.red;
+      case 'blue':
+        return Colors.blue;
+      case 'green':
+        return Colors.green;
+      case 'yellow':
+        return Colors.yellow;
+      case 'black':
+        return Colors.black;
+      case 'white':
+        return Colors.white;
+      case 'orange':
+        return Colors.orange;
+      case 'purple':
+        return Colors.purple;
+      case 'pink':
+        return Colors.pink;
+      default:
+        return Colors.grey; // Default color if no match
+    }
+  }
+
+  // Function to get unique colors from stockData
+  List<String> getUniqueColors() {
+    Set<String> uniqueColors = {};
+    for (var item in stockData) {
+      uniqueColors.add(item['color']['colorName']);
+    }
+    return uniqueColors.toList();
+  }
+
+  // Function to get sizes and stock for a specific color
+  List<Map<String, dynamic>> getSizesForColor(String colorName) {
+    return stockData
+        .where((item) => item['color']['colorName'] == colorName)
+        .toList();
+  }
+
+  Future<void> fetchCartItems() async {
+    if (userCode != null && userCode != 'N/A') {
+      final items = await _cartService.fetchCartItems(userCode);
+      setState(() {
+        cartItems = items;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: lightGrey,
       appBar: AppBar(
-        title: title!.text.color(darkFontGrey).fontFamily(bold).make(),
+        title: widget.product['productName']
+            .toString()
+            .text
+            .color(darkFontGrey)
+            .fontFamily(bold)
+            .make(),
         actions: [
+          IconButton(onPressed: () {}, icon: const Icon(Icons.share)),
           IconButton(
-              onPressed: () {},
-              icon: const Icon(
-                Icons.share,
-              )),
-          IconButton(
-              onPressed: () {},
-              icon: const Icon(
-                Icons.favorite_outline,
-              )),
+              onPressed: () {}, icon: const Icon(Icons.favorite_outline)),
         ],
       ),
       body: Column(
@@ -93,164 +158,182 @@ class ItemsDetails extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    VxSwiper.builder(
-                      autoPlay: true,
-                      height: 350,
-                      itemCount: 3,
-                      aspectRatio: 16 / 9,
-                      itemBuilder: (context, index) {
-                        return Image.asset(imgFc5,
-                            width: double.infinity, fit: BoxFit.cover);
-                      },
+                    if (mainImage != null)
+                      Image.memory(mainImage!,
+                          width: double.infinity,
+                          height: 350,
+                          fit: BoxFit.cover),
+                    10.heightBox,
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        if (subImage1 != null)
+                          Image.memory(subImage1!,
+                                  width: 100, height: 100, fit: BoxFit.cover)
+                              .box
+                              .roundedSM
+                              .make(),
+                        10.widthBox,
+                        if (subImage2 != null)
+                          Image.memory(subImage2!,
+                                  width: 100, height: 100, fit: BoxFit.cover)
+                              .box
+                              .roundedSM
+                              .make(),
+                      ],
                     ),
                     10.heightBox,
-                    // Title and details
-                    title!.text
+                    widget.product['productName']
+                        .toString()
+                        .text
                         .size(16)
                         .color(darkFontGrey)
                         .fontFamily(semibold)
                         .make(),
                     10.heightBox,
-                    // Rating
-                    VxRating(
-                      onRatingUpdate: (value) {},
-                      normalColor: textfieldGrey,
-                      selectionColor: golden,
-                      count: 5,
-                      size: 25,
-                      stepInt: true,
-                    ),
+                    "Highlights: ${widget.product['productHighLights']}"
+                        .text
+                        .color(darkFontGrey)
+                        .make(),
                     10.heightBox,
-                    "\$300"
+                    "Description: ${widget.product['productDescription']}"
+                        .text
+                        .color(darkFontGrey)
+                        .make(),
+                    10.heightBox,
+                    "Brand: ${widget.product['brand']['brandName']}"
+                        .text
+                        .color(darkFontGrey)
+                        .make(),
+                    10.heightBox,
+                    "Price: \₹ ${widget.product['productPrice']}"
                         .text
                         .color(redColor)
                         .fontFamily(bold)
                         .size(18)
                         .make(),
-                    10.heightBox,
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              "Seller".text.white.fontFamily(semibold).make(),
-                              5.heightBox,
-                              "In House Brands"
-                                  .text
-                                  .fontFamily(semibold)
-                                  .color(darkFontGrey)
-                                  .size(18)
-                                  .make(),
-                            ],
+                    20.heightBox,
+                    // Display Unique Colors and Sizes
+                    if (stockData.isNotEmpty)
+                      Column(
+                        children: [
+                          // Color Row
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: getUniqueColors().map((colorName) {
+                              Color color = _getColorFromName(colorName);
+                              return GestureDetector(
+                                onTap: () {
+                                  setState(() {
+                                    // Toggle selected color
+                                    if (selectedColor == colorName) {
+                                      selectedColor = null; // Deselect
+                                    } else {
+                                      selectedColor = colorName; // Select
+                                    }
+                                    selectedSize = null; // Reset selected size
+                                  });
+                                },
+                                child: Column(
+                                  children: [
+                                    // Color Circle
+                                    Container(
+                                      width: 40,
+                                      height: 40,
+                                      decoration: BoxDecoration(
+                                        color: color,
+                                        shape: BoxShape.circle,
+                                        border: Border.all(
+                                          color: selectedColor == colorName
+                                              ? Colors.black
+                                              : Colors.transparent,
+                                          width: 2,
+                                        ),
+                                      ),
+                                    ),
+                                    SizedBox(height: 5),
+                                    // Color Name
+                                    Text(
+                                      colorName,
+                                      style: TextStyle(fontSize: 16),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            }).toList(),
                           ),
-                        ),
-                        const CircleAvatar(
-                          backgroundColor: Colors.white,
-                          child:
-                              Icon(Icons.message_rounded, color: darkFontGrey),
-                        ),
-                      ],
-                    )
-                        .box
-                        .height(70)
-                        .padding(const EdgeInsets.symmetric(horizontal: 16))
-                        .color(textfieldGrey)
-                        .make(),
-                    20.heightBox,
-                    // Color section
-                    Column(
-                      children: [
-                        Row(
-                          children: [
-                            SizedBox(
-                              width: 100,
-                              child: "Color: ".text.color(textfieldGrey).make(),
+                          10.heightBox,
+                          // Show Sizes for Selected Color
+                          if (selectedColor != null)
+                            Wrap(
+                              spacing: 10,
+                              runSpacing: 10,
+                              children:
+                                  getSizesForColor(selectedColor!).map((item) {
+                                String sizeName = item['size']['sizeName'];
+                                int stockCount = item['stockCount'];
+                                return GestureDetector(
+                                  onTap: () {
+                                    setState(() {
+                                      // Toggle selected size
+                                      if (selectedSize == sizeName) {
+                                        selectedSize = null; // Deselect
+                                      } else {
+                                        selectedSize = sizeName; // Select
+                                      }
+                                    });
+                                  },
+                                  child: Container(
+                                    padding: EdgeInsets.all(10),
+                                    decoration: BoxDecoration(
+                                      color: selectedSize == sizeName
+                                          ? Colors.blue
+                                          : Colors.grey[200],
+                                      borderRadius: BorderRadius.circular(8),
+                                      border: Border.all(
+                                        color: selectedSize == sizeName
+                                            ? Colors.black
+                                            : Colors.transparent,
+                                        width: 2,
+                                      ),
+                                    ),
+                                    child: Column(
+                                      children: [
+                                        Text(
+                                          sizeName,
+                                          style: TextStyle(
+                                            fontSize: 16,
+                                            color: selectedSize == sizeName
+                                                ? Colors.white
+                                                : Colors.black,
+                                          ),
+                                        ),
+                                        SizedBox(height: 5),
+                                        Text(
+                                          stockCount > 0
+                                              ? "Stock: $stockCount"
+                                              : "No Stock",
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            color: selectedSize == sizeName
+                                                ? Colors.white
+                                                : Colors.black,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                );
+                              }).toList(),
                             ),
-                            Row(
-                              children: List.generate(
-                                3,
-                                (index) => VxBox()
-                                    .size(40, 40)
-                                    .roundedFull
-                                    .color(Vx.randomPrimaryColor)
-                                    .margin(const EdgeInsets.symmetric(
-                                        horizontal: 4))
-                                    .make(),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                    20.heightBox,
-                    // Quantity and Total section
-                    Column(
-                      children: [
-                        // Quantity section
-                        Row(
-                          children: [
-                            SizedBox(
-                              width: 100,
-                              child:
-                                  "Quantity:".text.color(textfieldGrey).make(),
-                            ),
-                            Row(
-                              children: [
-                                IconButton(
-                                    onPressed: () {},
-                                    icon: const Icon(Icons.remove)),
-                                "0"
-                                    .text
-                                    .size(16)
-                                    .color(darkFontGrey)
-                                    .fontFamily(bold)
-                                    .make(),
-                                IconButton(
-                                    onPressed: () {},
-                                    icon: const Icon(Icons.add)),
-                                10.widthBox,
-                                "(0 available)"
-                                    .text
-                                    .color(textfieldGrey)
-                                    .make(),
-                              ],
-                            ),
-                          ],
-                        ),
-                        10.heightBox,
-                        // Total section
-                        Row(
-                          children: [
-                            SizedBox(
-                              width: 100,
-                              child: "Total:".text.color(textfieldGrey).make(),
-                            ),
-                            "\$0.00"
-                                .text
-                                .color(redColor)
-                                .size(16)
-                                .fontFamily(bold)
-                                .make(),
-                          ],
-                        ).box.padding(const EdgeInsets.all(8)).make(),
-                      ],
-                    ).box.white.shadowSm.make(),
-                    // Description Section
-                    10.heightBox,
-                    "Description"
-                        .text
-                        .color(darkFontGrey)
-                        .fontFamily(semibold)
-                        .make(),
-                    10.heightBox,
-                    "This is a dummy item and dummy description here ... loremabd ajffboasnv aofnojajj daifbaonvn afdof a ffgghog goffng afng "
-                        .text
-                        .color(darkFontGrey)
-                        .make(),
-
-                    // Buttons section
+                          Divider(),
+                        ],
+                      )
+                    else
+                      Text(
+                        'No Stock Available!',
+                        style: TextStyle(fontSize: 16),
+                      ),
                     10.heightBox,
                     ListView(
                       physics: const NeverScrollableScrollPhysics(),
@@ -267,50 +350,6 @@ class ItemsDetails extends StatelessWidget {
                         ),
                       ),
                     ),
-                    20.heightBox,
-                    // Products you  may like
-                    productsyoumaylike.text
-                        .fontFamily(bold)
-                        .size(16)
-                        .color(darkFontGrey)
-                        .make(),
-                    10.heightBox,
-                    SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      child: Row(
-                        children: List.generate(
-                            6,
-                            (index) => Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Image.asset(
-                                      imgP1,
-                                      width: 150,
-                                      fit: BoxFit.cover,
-                                    ),
-                                    10.heightBox,
-                                    "Laptop 4GB/64GB"
-                                        .text
-                                        .fontFamily(semibold)
-                                        .color(darkFontGrey)
-                                        .make(),
-                                    10.heightBox,
-                                    "\$600"
-                                        .text
-                                        .color(redColor)
-                                        .fontFamily(bold)
-                                        .size(16)
-                                        .make()
-                                  ],
-                                )
-                                    .box
-                                    .white
-                                    .roundedSM
-                                    .margin(EdgeInsets.symmetric(horizontal: 8))
-                                    .padding(const EdgeInsets.all(4))
-                                    .make()),
-                      ),
-                    )
                   ],
                 ),
               ),
@@ -321,11 +360,77 @@ class ItemsDetails extends StatelessWidget {
             height: 60,
             child: ourButton(
               color: redColor,
-              onPress: () {},
+              onPress: () async {
+                if (selectedColor == null || selectedSize == null) {
+                  showGlobalSnackBar('Please select color and size!');
+                  return;
+                }
+
+                // Extract colorCode
+                var selectedColorData = stockData.firstWhere(
+                  (item) => item['color']['colorName'] == selectedColor,
+                  orElse: () => <String, dynamic>{},
+                );
+                String colorCode =
+                    selectedColorData['color']?['colorCode'] ?? '';
+
+                // Extract sizeCode
+                var selectedSizeData = stockData.firstWhere(
+                  (item) => item['size']['sizeName'] == selectedSize,
+                  orElse: () => <String, dynamic>{},
+                );
+                String sizeCode = selectedSizeData['size']?['sizeCode'] ?? '';
+
+                if (colorCode.isEmpty || sizeCode.isEmpty) {
+                  showGlobalSnackBar('Invalid selection. Please try again.');
+                  return;
+                }
+
+                // Ensure productCode is available
+                String productCode = widget.product['productCode'] ?? '';
+
+                // ✅ Check if item already exists in cart
+                var existingCartItem = cartItems.firstWhere(
+                  (item) =>
+                      item['product']['productCode'] == productCode &&
+                      item['sizeCode'] == sizeCode &&
+                      item['colorCode'] == colorCode,
+                  orElse: () => <String, dynamic>{},
+                );
+
+                if (existingCartItem.isNotEmpty) {
+                  // ✅ If item exists, update the count
+                  int newCount = existingCartItem['count'] + 1;
+                  Map<String, dynamic> updatedCartItem = {
+                    "cartCode": existingCartItem['cartCode'],
+                    "productCode": productCode,
+                    "sizeCode": sizeCode,
+                    "colorCode": colorCode,
+                    "userCode": userCode,
+                    "count": newCount,
+                  };
+
+                  await _cartService.updateCartItem(updatedCartItem);
+                } else {
+                  // ✅ If item does not exist, add a new one
+                  Map<String, dynamic> newCartItem = {
+                    "productCode": productCode,
+                    "sizeCode": sizeCode,
+                    "colorCode": colorCode,
+                    "userCode": userCode,
+                    "count": 1,
+                  };
+
+                  await _cartService.addCartItem(newCartItem);
+                }
+
+                // Refresh cart items after update
+                fetchCartItems();
+              },
               textColor: whiteColor,
               title: "Add to cart",
             ),
-          ),
+          )
         ],
       ),
     );

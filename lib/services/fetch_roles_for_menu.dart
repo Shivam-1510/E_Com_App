@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 class UserService {
-  final String baseUrl = "https://localhost:7157";
+  final String baseUrl = "https://localhost:5001";
 
   Future<String?> getToken() async {
     final prefs = await SharedPreferences.getInstance();
@@ -38,11 +38,9 @@ class UserService {
           };
         }).toList();
       } else {
-        print('Failed to fetch roles: ${response.statusCode}');
         return [];
       }
     } catch (e) {
-      print('Error fetching roles: $e');
       return [];
     }
   }
@@ -50,7 +48,6 @@ class UserService {
   Future<List<Map<String, dynamic>>?> fetchUsers(String roleCode) async {
     final token = await getToken();
     if (token == null) {
-      print("No token found. Please log in.");
       return null;
     }
 
@@ -80,11 +77,9 @@ class UserService {
           };
         }).toList();
       } else {
-        print('Failed to fetch users: ${response.statusCode}');
         return null;
       }
     } catch (e) {
-      print('Error fetching users: $e');
       return null;
     }
   }

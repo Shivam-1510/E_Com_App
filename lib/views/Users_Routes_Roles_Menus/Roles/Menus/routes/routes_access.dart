@@ -5,6 +5,7 @@ import 'package:e_comapp/utils/snackbar_util.dart';
 import 'package:e_comapp/views/widgets_common/applogo.dart';
 import 'package:e_comapp/views/widgets_common/bg_widgets.dart';
 import 'package:e_comapp/services/route_access_service.dart';
+import 'package:e_comapp/views/widgets_common/drawer.dart';
 
 class RoutesAccess extends StatefulWidget {
   const RoutesAccess({super.key});
@@ -14,7 +15,7 @@ class RoutesAccess extends StatefulWidget {
 }
 
 class _RoutesAccessState extends State<RoutesAccess> {
-  final String baseUrl = "https://localhost:7157";
+  final String baseUrl = "https://localhost:5001";
   final UserService _userService = UserService();
   final RouteService _routeService = RouteService();
   final RouteAccessService _routeAccessService = RouteAccessService();
@@ -129,11 +130,8 @@ class _RoutesAccessState extends State<RoutesAccess> {
 
       if (response != null) {
         showGlobalSnackBar('Route Access updated successfully!');
-      } else {
-        print("Failed to update route access.");
-      }
+      } else {}
     } catch (e) {
-      print("Error updating route access: $e");
     } finally {
       setState(() => isLoading = false);
     }
@@ -175,7 +173,6 @@ class _RoutesAccessState extends State<RoutesAccess> {
 
       setState(() {}); //  UI ko refresh karne ke liye
     } catch (e) {
-      print("Error fetching route access: $e");
     } finally {
       setState(() => isLoading = false);
     }
@@ -231,6 +228,13 @@ class _RoutesAccessState extends State<RoutesAccess> {
   Widget build(BuildContext context) {
     return bgWidget(
       Scaffold(
+        appBar: AppBar(
+            title: Text(
+              'Route Access',
+              style: TextStyle(color: Colors.white),
+            ),
+            iconTheme: IconThemeData(color: Colors.white)),
+        drawer: CustomDrawer(),
         body: Center(
             child: SingleChildScrollView(
           scrollDirection: Axis.vertical,
@@ -239,14 +243,7 @@ class _RoutesAccessState extends State<RoutesAccess> {
             children: [
               SizedBox(height: context.screenHeight * 0.02),
               applogoWidget(),
-              10.heightBox,
-              "Routes Access With Role"
-                  .text
-                  .fontFamily(bold)
-                  .color(Colors.white)
-                  .size(18)
-                  .make(),
-              15.heightBox,
+              20.heightBox,
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -287,10 +284,7 @@ class _RoutesAccessState extends State<RoutesAccess> {
                             try {
                               List<Map<String, dynamic>> routeAccessList =
                                   await _routeAccessService
-                                          .fetchRouteByRoleCode(
-                                              selectedRoleCode!) ??
-                                      []; //  Null safety fix
-
+                                      .fetchRouteByRoleCode(selectedRoleCode!);
                               switches.clear();
                               selectedRoutes.clear();
 
@@ -323,7 +317,6 @@ class _RoutesAccessState extends State<RoutesAccess> {
                                 }
                               }
                             } catch (e) {
-                              print("Error fetching route access: $e");
                             } finally {
                               setState(() => isLoading = false);
                             }

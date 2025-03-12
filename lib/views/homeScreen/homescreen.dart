@@ -111,7 +111,7 @@ class Homescreen extends StatelessWidget {
                               title: index == 0
                                   ? topCategories
                                   : index == 1
-                                      ? brand
+                                      ? brand2
                                       : topSellers)),
                     ),
                     // featured categories

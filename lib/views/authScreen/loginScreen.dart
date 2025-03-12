@@ -1,7 +1,7 @@
 import 'package:e_comapp/consts/consts.dart';
 import 'package:e_comapp/consts/list.dart';
 import 'package:e_comapp/utils/snackbar_util.dart';
-import 'package:e_comapp/views/Users_Routes_Roles_Menus/Roles/Menus/authnav.dart';
+import 'package:e_comapp/views/Users_Routes_Roles_Menus/Roles/Menus/roles.dart';
 import 'package:e_comapp/views/authScreen/signupScreen.dart';
 import 'package:e_comapp/views/homeScreen/homenav.dart';
 import 'package:e_comapp/views/widgets_common/applogo.dart';
@@ -24,12 +24,12 @@ class _LoginscreenState extends State<Loginscreen> {
   final AuthService _authService = AuthService(); // Instance of AuthService
   final _phoneController = TextEditingController();
   final _passwordController = TextEditingController();
-  bool _isLoading = false;
+  bool isLoading = false;
   String? _errorMessage;
 
   void _login() async {
     setState(() {
-      _isLoading = true;
+      isLoading = true;
       _errorMessage = null;
     });
 
@@ -39,7 +39,7 @@ class _LoginscreenState extends State<Loginscreen> {
     );
 
     setState(() {
-      _isLoading = false;
+      isLoading = false;
     });
 
     if (response.containsKey('error')) {
@@ -71,7 +71,8 @@ class _LoginscreenState extends State<Loginscreen> {
         Get.offAll(() => Home());
         showGlobalSnackBar("Welcome, User!");
       } else {
-        Get.offAll(() => Authnav());
+        // Get.offAll(() => Authnav());
+        Get.offAll(() => Roles());
         showGlobalSnackBar("Welcome!");
       }
     } catch (e) {
@@ -154,7 +155,7 @@ class _LoginscreenState extends State<Loginscreen> {
                 .box
                 .white
                 .rounded
-                .padding(const EdgeInsets.all(16))
+                .padding(const EdgeInsets.all(16)) 
                 .width(context.screenWidth - 70)
                 .shadowSm
                 .make(),

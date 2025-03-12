@@ -21,12 +21,12 @@ class _SignupscreenState extends State<Signupscreen> {
   final _phoneController = TextEditingController();
   final _passwordController = TextEditingController();
   bool? isCheck = false;
-  bool _isLoading = false;
+  bool isLoading = false;
   String? _errorMessage;
 
   void _signUp() async {
     setState(() {
-      _isLoading = true;
+      isLoading = true;
       _errorMessage = null;
     });
 
@@ -39,7 +39,7 @@ class _SignupscreenState extends State<Signupscreen> {
       );
 
       setState(() {
-        _isLoading = false;
+        isLoading = false;
       });
 
       if (response.containsKey('error')) {
@@ -61,7 +61,7 @@ class _SignupscreenState extends State<Signupscreen> {
       }
     } catch (e) {
       setState(() {
-        _isLoading = false;
+        isLoading = false;
         _errorMessage = "An error occurred: $e";
       });
     }
@@ -99,15 +99,15 @@ class _SignupscreenState extends State<Signupscreen> {
                   isPass: true,
                   controller: _passwordController,
                 ),
-                Align(
-                  alignment: Alignment.centerRight,
-                  child: TextButton(
-                    onPressed: () {
-                      // Forgot password logic
-                    },
-                    child: forgetPass.text.color(Colors.blue).make(),
-                  ),
-                ),
+                // Align(
+                //   alignment: Alignment.centerRight,
+                //   child: TextButton(
+                //     onPressed: () {
+                //       // Forgot password logic
+                //     },
+                //     child: forgetPass.text.color(Colors.blue).make(),
+                //   ),
+                // ),
                 5.heightBox,
                 Row(
                   children: [

@@ -1,7 +1,5 @@
-import 'package:e_comapp/consts/colors.dart';
 import 'package:e_comapp/consts/consts.dart';
 import 'package:e_comapp/views/Splashscreen/splashscreen.dart';
-import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'utils/snackbar_util.dart';  // Utility function import karo
 
